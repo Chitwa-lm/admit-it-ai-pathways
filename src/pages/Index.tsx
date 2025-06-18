@@ -3,7 +3,9 @@ import Header from "@/components/Header";
 import StatsCard from "@/components/StatsCard";
 import ApplicationStatus from "@/components/ApplicationStatus";
 import NLPAnalysis from "@/components/NLPAnalysis";
-import { Users, FileText, Check, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { Users, FileText, Check, Clock, ExternalLink } from "lucide-react";
 
 const Index = () => {
   return (
@@ -12,13 +14,21 @@ const Index = () => {
       
       <main className="p-6 space-y-6">
         {/* Welcome Section */}
-        <div className="animate-fade-in">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Welcome to K-12 Admissions Dashboard
-          </h2>
-          <p className="text-gray-600">
-            Manage student enrollment applications with intelligent analysis and real-time tracking
-          </p>
+        <div className="animate-fade-in flex justify-between items-start">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Welcome to K-12 Admissions Dashboard
+            </h2>
+            <p className="text-gray-600">
+              Manage student enrollment applications with intelligent analysis and real-time tracking
+            </p>
+          </div>
+          <Link to="/parent-portal">
+            <Button className="flex items-center space-x-2">
+              <ExternalLink className="h-4 w-4" />
+              <span>Parent Portal</span>
+            </Button>
+          </Link>
         </div>
 
         {/* Stats Grid */}
