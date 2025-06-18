@@ -1,31 +1,31 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Brain, TrendingUp, Users, Target } from "lucide-react";
+import { Brain, BookOpen, Users, Star } from "lucide-react";
 
 const NLPAnalysis = () => {
   const analysisData = [
     {
-      category: "Academic Excellence",
-      score: 85,
+      category: "Academic Readiness",
+      score: 82,
       color: "bg-blue-500",
-      icon: Target
+      icon: BookOpen
     },
     {
-      category: "Communication Skills",
+      category: "Social Skills",
       score: 78,
       color: "bg-green-500",
       icon: Users
     },
     {
-      category: "Leadership Potential",
-      score: 72,
+      category: "Parent Engagement",
+      score: 85,
       color: "bg-purple-500",
-      icon: TrendingUp
+      icon: Star
     },
     {
-      category: "Technical Aptitude",
-      score: 90,
+      category: "Learning Potential",
+      score: 88,
       color: "bg-orange-500",
       icon: Brain
     }
@@ -36,7 +36,7 @@ const NLPAnalysis = () => {
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <Brain className="h-5 w-5 text-primary" />
-          <span>NLP Analysis Overview</span>
+          <span>Assessment Overview</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -58,8 +58,8 @@ const NLPAnalysis = () => {
           })}
           <div className="pt-4 border-t">
             <div className="text-center">
-              <div className="text-2xl font-bold text-primary">81.25%</div>
-              <div className="text-sm text-gray-600">Overall Analysis Score</div>
+              <div className="text-2xl font-bold text-primary">83.25%</div>
+              <div className="text-sm text-gray-600">Overall Assessment Score</div>
             </div>
           </div>
         </div>

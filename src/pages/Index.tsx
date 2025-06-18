@@ -14,40 +14,40 @@ const Index = () => {
         {/* Welcome Section */}
         <div className="animate-fade-in">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Welcome to AdmitAI Dashboard
+            Welcome to K-12 Admissions Dashboard
           </h2>
           <p className="text-gray-600">
-            Manage student admissions with intelligent analysis and real-time tracking
+            Manage student enrollment applications with intelligent analysis and real-time tracking
           </p>
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatsCard
-            title="Total Applications"
-            value="1,247"
-            change="+12%"
+            title="New Applications"
+            value="156"
+            change="+8%"
             icon={FileText}
             color="bg-blue-500"
           />
           <StatsCard
             title="Under Review"
-            value="342"
-            change="+5%"
+            value="42"
+            change="+3%"
             icon={Clock}
             color="bg-yellow-500"
           />
           <StatsCard
-            title="Approved"
-            value="678"
-            change="+18%"
+            title="Enrolled"
+            value="289"
+            change="+12%"
             icon={Check}
             color="bg-green-500"
           />
           <StatsCard
-            title="Active Students"
-            value="892"
-            change="+8%"
+            title="Total Students"
+            value="1,247"
+            change="+5%"
             icon={Users}
             color="bg-purple-500"
           />

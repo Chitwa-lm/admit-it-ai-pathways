@@ -6,8 +6,8 @@ import { Check, Clock, AlertCircle, FileText } from "lucide-react";
 interface Application {
   id: string;
   studentName: string;
-  course: string;
-  status: "pending" | "under-review" | "approved" | "rejected";
+  grade: string;
+  status: "pending" | "under-review" | "enrolled" | "waitlisted";
   submittedDate: string;
   nlpScore?: number;
 }
@@ -16,24 +16,24 @@ const ApplicationStatus = () => {
   const applications: Application[] = [
     {
       id: "APP001",
-      studentName: "Sarah Johnson",
-      course: "Computer Science",
-      status: "approved",
+      studentName: "Emma Johnson",
+      grade: "Grade 9",
+      status: "enrolled",
       submittedDate: "2024-01-15",
       nlpScore: 8.5
     },
     {
       id: "APP002",
       studentName: "Michael Chen",
-      course: "Data Science",
+      grade: "Grade 6",
       status: "under-review",
       submittedDate: "2024-01-14",
       nlpScore: 7.2
     },
     {
       id: "APP003",
-      studentName: "Emma Wilson",
-      course: "Business Administration",
+      studentName: "Sarah Wilson",
+      grade: "Kindergarten",
       status: "pending",
       submittedDate: "2024-01-13",
       nlpScore: 6.8
@@ -41,20 +41,20 @@ const ApplicationStatus = () => {
     {
       id: "APP004",
       studentName: "David Rodriguez",
-      course: "Engineering",
-      status: "rejected",
+      grade: "Grade 3",
+      status: "waitlisted",
       submittedDate: "2024-01-12",
-      nlpScore: 4.2
+      nlpScore: 5.8
     }
   ];
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "approved":
+      case "enrolled":
         return <Check className="h-4 w-4" />;
       case "under-review":
         return <Clock className="h-4 w-4" />;
-      case "rejected":
+      case "waitlisted":
         return <AlertCircle className="h-4 w-4" />;
       default:
         return <FileText className="h-4 w-4" />;
@@ -63,12 +63,12 @@ const ApplicationStatus = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "approved":
+      case "enrolled":
         return "bg-green-100 text-green-800 hover:bg-green-200";
       case "under-review":
         return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200";
-      case "rejected":
-        return "bg-red-100 text-red-800 hover:bg-red-200";
+      case "waitlisted":
+        return "bg-orange-100 text-orange-800 hover:bg-orange-200";
       default:
         return "bg-gray-100 text-gray-800 hover:bg-gray-200";
     }
@@ -103,11 +103,11 @@ const ApplicationStatus = () => {
                   </Badge>
                 </div>
                 <div className="text-sm text-gray-500 mt-1">
-                  {app.course} • Applied {app.submittedDate}
+                  {app.grade} • Applied {app.submittedDate}
                 </div>
                 {app.nlpScore && (
                   <div className="text-sm text-primary font-medium mt-1">
-                    NLP Score: {app.nlpScore}/10
+                    Assessment Score: {app.nlpScore}/10
                   </div>
                 )}
               </div>
