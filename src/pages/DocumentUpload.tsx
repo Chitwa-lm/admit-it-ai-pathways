@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Upload, FileText, Check, X } from "lucide-react";
+import { ArrowLeft, Upload, FileText, Check, X, AlertCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface Document {
   id: string;
@@ -13,10 +14,12 @@ interface Document {
   required: boolean;
   uploaded: boolean;
   file?: File;
+  error?: string;
 }
 
 const DocumentUpload = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [documents, setDocuments] = useState<Document[]>([
     { id: "birth-cert", name: "Birth Certificate", required: true, uploaded: false },
     { id: "immunization", name: "Immunization Records", required: true, uploaded: false },
@@ -25,21 +28,101 @@ const DocumentUpload = () => {
     { id: "proof-residence", name: "Proof of Residence", required: true, uploaded: false },
     { id: "medical", name: "Medical Records", required: false, uploaded: false }
   ]);
+  const [draggedOver, setDraggedOver] = useState<string | null>(null);
+
+  const validateFile = (file: File): string | null => {
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const allowedTypes = [
+      'application/pdf',
+      'image/jpeg',
+      'image/jpg', 
+      'image/png',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+
+    if (file.size > maxSize) {
+      return "File size must be less than 5MB";
+    }
+
+    if (!allowedTypes.includes(file.type)) {
+      return "File type not supported. Please use PDF, JPG, PNG, DOC, or DOCX files";
+    }
+
+    return null;
+  };
 
   const handleFileUpload = (docId: string, file: File) => {
+    const error = validateFile(file);
+    
+    if (error) {
+      setDocuments(prev => prev.map(doc => 
+        doc.id === docId 
+          ? { ...doc, uploaded: false, file: undefined, error }
+          : doc
+      ));
+      toast({
+        title: "Upload Error",
+        description: error,
+        variant: "destructive"
+      });
+      return;
+    }
+
     setDocuments(prev => prev.map(doc => 
       doc.id === docId 
-        ? { ...doc, uploaded: true, file }
+        ? { ...doc, uploaded: true, file, error: undefined }
         : doc
     ));
+
+    toast({
+      title: "File Uploaded",
+      description: `${file.name} has been uploaded successfully`,
+    });
   };
 
   const handleRemoveFile = (docId: string) => {
+    const doc = documents.find(d => d.id === docId);
     setDocuments(prev => prev.map(doc => 
       doc.id === docId 
-        ? { ...doc, uploaded: false, file: undefined }
+        ? { ...doc, uploaded: false, file: undefined, error: undefined }
         : doc
     ));
+
+    if (doc?.file) {
+      toast({
+        title: "File Removed",
+        description: `${doc.file.name} has been removed`,
+      });
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent, docId: string) => {
+    e.preventDefault();
+    setDraggedOver(docId);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDraggedOver(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, docId: string) => {
+    e.preventDefault();
+    setDraggedOver(null);
+    
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      handleFileUpload(docId, files[0]);
+    }
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   const requiredDocsUploaded = documents.filter(doc => doc.required && doc.uploaded).length;
@@ -49,8 +132,10 @@ const DocumentUpload = () => {
   const handleSubmit = () => {
     if (canSubmit) {
       console.log("Documents submitted:", documents.filter(doc => doc.uploaded));
-      // In real app, this would upload files to backend
-      alert("Documents submitted successfully! Your application is now under review.");
+      toast({
+        title: "Application Submitted",
+        description: "Your documents have been submitted successfully! Your application is now under review.",
+      });
       navigate("/parent-portal");
     }
   };
@@ -106,15 +191,29 @@ const DocumentUpload = () => {
                     {doc.uploaded && (
                       <Check className="h-5 w-5 text-green-600" />
                     )}
+                    {doc.error && (
+                      <AlertCircle className="h-5 w-5 text-red-600" />
+                    )}
                   </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {!doc.uploaded ? (
                   <div className="space-y-4">
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors">
-                      <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                      <p className="text-sm text-gray-600 mb-2">
+                    <div 
+                      className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                        draggedOver === doc.id 
+                          ? 'border-primary bg-primary/5' 
+                          : doc.error 
+                            ? 'border-red-300 bg-red-50' 
+                            : 'border-gray-300 hover:border-primary'
+                      }`}
+                      onDragOver={(e) => handleDragOver(e, doc.id)}
+                      onDragLeave={handleDragLeave}
+                      onDrop={(e) => handleDrop(e, doc.id)}
+                    >
+                      <Upload className={`h-8 w-8 mx-auto mb-2 ${doc.error ? 'text-red-400' : 'text-gray-400'}`} />
+                      <p className={`text-sm mb-2 ${doc.error ? 'text-red-600' : 'text-gray-600'}`}>
                         Drop file here or click to browse
                       </p>
                       <Input
@@ -135,6 +234,12 @@ const DocumentUpload = () => {
                         </Button>
                       </Label>
                     </div>
+                    {doc.error && (
+                      <div className="flex items-center space-x-2 text-red-600 text-sm">
+                        <AlertCircle className="h-4 w-4" />
+                        <span>{doc.error}</span>
+                      </div>
+                    )}
                     <p className="text-xs text-gray-500">
                       Accepted formats: PDF, JPG, PNG, DOC, DOCX (Max 5MB)
                     </p>
@@ -149,7 +254,7 @@ const DocumentUpload = () => {
                             {doc.file?.name}
                           </p>
                           <p className="text-xs text-green-600">
-                            Uploaded successfully
+                            {doc.file && formatFileSize(doc.file.size)} • Uploaded successfully
                           </p>
                         </div>
                       </div>
