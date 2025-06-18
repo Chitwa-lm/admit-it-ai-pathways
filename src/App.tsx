@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
+import ParentLogin from "./pages/ParentLogin";
 import ParentPortal from "./pages/ParentPortal";
 import ApplicationForm from "./pages/ApplicationForm";
 import DocumentUpload from "./pages/DocumentUpload";
@@ -20,6 +21,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/parent-login" element={<ParentLogin />} />
           <Route path="/parent-portal" element={<ParentPortal />} />
           <Route path="/application" element={<ApplicationForm />} />
           <Route path="/documents" element={<DocumentUpload />} />

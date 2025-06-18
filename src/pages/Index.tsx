@@ -23,10 +23,10 @@ const Index = () => {
               Manage student enrollment applications with intelligent analysis and real-time tracking
             </p>
           </div>
-          <Link to="/parent-portal">
+          <Link to="/parent-login">
             <Button className="flex items-center space-x-2">
               <ExternalLink className="h-4 w-4" />
-              <span>Parent Portal</span>
+              <span>Parent Login</span>
             </Button>
           </Link>
         </div>
