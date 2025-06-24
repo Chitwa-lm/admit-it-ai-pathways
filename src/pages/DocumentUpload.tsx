@@ -116,6 +116,13 @@ const DocumentUpload = () => {
     }
   };
 
+  const handleChooseFile = (docId: string) => {
+    const input = document.getElementById(`file-${docId}`) as HTMLInputElement;
+    if (input) {
+      input.click();
+    }
+  };
+
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -153,7 +160,6 @@ const DocumentUpload = () => {
           </div>
         </div>
 
-        {/* Progress */}
         <Card className="mb-6">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-2">
@@ -205,7 +211,7 @@ const DocumentUpload = () => {
                 {!doc.uploaded ? (
                   <div className="space-y-4">
                     <div 
-                      className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                      className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
                         draggedOver === doc.id 
                           ? 'border-primary bg-primary/5' 
                           : doc.error 
@@ -215,6 +221,7 @@ const DocumentUpload = () => {
                       onDragOver={(e) => handleDragOver(e, doc.id)}
                       onDragLeave={handleDragLeave}
                       onDrop={(e) => handleDrop(e, doc.id)}
+                      onClick={() => handleChooseFile(doc.id)}
                     >
                       <Upload className={`h-8 w-8 mx-auto mb-2 ${doc.error ? 'text-red-400' : 'text-gray-400'}`} />
                       <p className={`text-sm mb-2 ${doc.error ? 'text-red-600' : 'text-gray-600'}`}>
@@ -232,11 +239,9 @@ const DocumentUpload = () => {
                         className="hidden"
                         id={`file-${doc.id}`}
                       />
-                      <Label htmlFor={`file-${doc.id}`} className="cursor-pointer">
-                        <Button type="button" variant="outline" size="sm">
-                          Choose File
-                        </Button>
-                      </Label>
+                      <Button type="button" variant="outline" size="sm">
+                        Choose File
+                      </Button>
                     </div>
                     {doc.error && (
                       <div className="flex items-center space-x-2 text-red-600 text-sm">
@@ -271,23 +276,26 @@ const DocumentUpload = () => {
                         <X className="h-4 w-4" />
                       </Button>
                     </div>
-                    <Label htmlFor={`replace-${doc.id}`} className="cursor-pointer">
-                      <Input
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            handleFileUpload(doc.id, file);
-                          }
-                        }}
-                        className="hidden"
-                        id={`replace-${doc.id}`}
-                      />
-                      <Button type="button" variant="outline" size="sm">
-                        Replace File
-                      </Button>
-                    </Label>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleChooseFile(doc.id)}
+                    >
+                      Replace File
+                    </Button>
+                    <Input
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          handleFileUpload(doc.id, file);
+                        }
+                      }}
+                      className="hidden"
+                      id={`replace-${doc.id}`}
+                    />
                   </div>
                 )}
               </CardContent>
@@ -295,7 +303,6 @@ const DocumentUpload = () => {
           ))}
         </div>
 
-        {/* Submit Section */}
         <Card>
           <CardContent className="pt-6">
             <div className="text-center space-y-4">
