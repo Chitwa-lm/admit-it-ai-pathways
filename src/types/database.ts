@@ -6,12 +6,12 @@ export interface School {
   location: string;
   district: string | null;
   description: string | null;
-  website_url: string | null;
+  website_url?: string | null;
   phone: string | null;
   email: string | null;
   address: string | null;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface AvailablePlace {
@@ -43,18 +43,18 @@ export interface Profile {
 
 export interface Student {
   id: string;
-  parent_id: string;
+  parent_id?: string;
   first_name: string;
   last_name: string;
-  date_of_birth: string;
+  date_of_birth?: string;
   grade: string;
   current_school: string | null;
-  special_needs: string | null;
-  emergency_contact_name: string | null;
-  emergency_contact_phone: string | null;
-  medical_conditions: string | null;
-  created_at: string;
-  updated_at: string;
+  special_needs?: string | null;
+  emergency_contact_name?: string | null;
+  emergency_contact_phone?: string | null;
+  medical_conditions?: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Application {
