@@ -1,9 +1,10 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Calendar, Phone, Mail, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
 import type { AvailablePlace } from "@/types/database";
 
 interface PlaceCardProps {
@@ -11,6 +12,8 @@ interface PlaceCardProps {
 }
 
 const PlaceCard = ({ place }: PlaceCardProps) => {
+  const navigate = useNavigate();
+
   const getSchoolTypeColor = (type: string) => {
     switch (type) {
       case 'Public':
@@ -29,6 +32,23 @@ const PlaceCard = ({ place }: PlaceCardProps) => {
     if (percentage > 50) return 'text-green-600';
     if (percentage > 20) return 'text-yellow-600';
     return 'text-red-600';
+  };
+
+  const handleApplyNow = () => {
+    console.log('Apply Now clicked for:', place.schools?.name);
+    toast({
+      title: "Application Started",
+      description: `Starting application for ${place.schools?.name} - ${place.grade}`,
+    });
+    navigate('/application');
+  };
+
+  const handleViewDetails = () => {
+    console.log('View Details clicked for:', place.schools?.name);
+    toast({
+      title: "School Details",
+      description: `Viewing details for ${place.schools?.name}`,
+    });
   };
 
   return (
@@ -91,10 +111,10 @@ const PlaceCard = ({ place }: PlaceCardProps) => {
         </div>
 
         <div className="flex space-x-2 pt-2">
-          <Button size="sm" className="flex-1">
+          <Button size="sm" className="flex-1" onClick={handleApplyNow}>
             Apply Now
           </Button>
-          <Button size="sm" variant="outline">
+          <Button size="sm" variant="outline" onClick={handleViewDetails}>
             <ExternalLink className="h-4 w-4" />
           </Button>
         </div>
