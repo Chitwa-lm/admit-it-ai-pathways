@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,9 +20,9 @@ const DocumentUpload = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [documents, setDocuments] = useState<Document[]>([
-    { id: "birth-cert", name: "Birth Certificate", required: true, uploaded: false },
-    { id: "immunization", name: "Immunization Records", required: true, uploaded: false },
-    { id: "transcript", name: "Previous School Transcript", required: false, uploaded: false },
+    { id: "birth-cert", name: "Birth Certificate", required: false, uploaded: false },
+    { id: "immunization", name: "Immunization Records", required: false, uploaded: false },
+    { id: "transcript", name: "Previous School Transcript (Academic History)", required: false, uploaded: false },
     { id: "photo", name: "Student Photo", required: true, uploaded: false },
     { id: "proof-residence", name: "Proof of Residence", required: true, uploaded: false },
     { id: "medical", name: "Medical Records", required: false, uploaded: false }
@@ -186,6 +185,11 @@ const DocumentUpload = () => {
                     {doc.required && (
                       <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
                         Required
+                      </span>
+                    )}
+                    {!doc.required && doc.id === 'transcript' && (
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                        Recommended
                       </span>
                     )}
                     {doc.uploaded && (
