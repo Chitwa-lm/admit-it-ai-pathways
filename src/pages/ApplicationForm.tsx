@@ -1,18 +1,19 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Save, Send } from "lucide-react";
+import { ArrowLeft, Save, Send, Brain } from "lucide-react";
+import SmartInput from "@/components/SmartInput";
+import { nlpService } from "@/services/nlpService";
+import { useToast } from "@/hooks/use-toast";
 
 const ApplicationForm = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     studentName: "",
     dateOfBirth: "",
@@ -30,11 +31,15 @@ const ApplicationForm = () => {
     emergencyPhone: "",
     additionalInfo: ""
   });
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Application submitted:", formData);
-    // In real app, this would submit to backend
+    toast({
+      title: "Application Submitted",
+      description: "Your application has been submitted successfully. You'll be redirected to upload documents.",
+    });
     navigate("/documents");
   };
 
@@ -42,18 +47,49 @@ const ApplicationForm = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const generateSummary = async () => {
+    setIsGeneratingSummary(true);
+    try {
+      const summary = await nlpService.generateApplicationSummary(formData);
+      toast({
+        title: "Application Summary Generated",
+        description: summary,
+        duration: 10000,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to generate application summary",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingSummary(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-3xl mx-auto">
-        <div className="mb-6 flex items-center space-x-4">
-          <Button variant="ghost" onClick={() => navigate("/parent-portal")}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Portal
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Student Application</h1>
-            <p className="text-gray-600">Complete your child's enrollment application</p>
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Button variant="ghost" onClick={() => navigate("/parent-portal")}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Portal
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Smart Application Form</h1>
+              <p className="text-gray-600">AI-powered form with smart suggestions and validation</p>
+            </div>
           </div>
+          <Button
+            onClick={generateSummary}
+            disabled={isGeneratingSummary}
+            variant="outline"
+            size="sm"
+          >
+            <Brain className="h-4 w-4 mr-2" />
+            {isGeneratingSummary ? "Generating..." : "AI Summary"}
+          </Button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -66,21 +102,21 @@ const ApplicationForm = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="studentName">Student Full Name *</Label>
-                  <Input
-                    id="studentName"
+                  <SmartInput
+                    field="studentName"
                     value={formData.studentName}
-                    onChange={(e) => handleInputChange("studentName", e.target.value)}
-                    required
+                    onChange={(value) => handleInputChange("studentName", value)}
+                    placeholder="Enter student's full name"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="dateOfBirth">Date of Birth *</Label>
-                  <Input
-                    id="dateOfBirth"
-                    type="date"
+                  <SmartInput
+                    field="dateOfBirth"
+                    type="input"
                     value={formData.dateOfBirth}
-                    onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
-                    required
+                    onChange={(value) => handleInputChange("dateOfBirth", value)}
+                    placeholder="YYYY-MM-DD"
                   />
                 </div>
               </div>
@@ -139,41 +175,40 @@ const ApplicationForm = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="parentName">Parent/Guardian Name *</Label>
-                  <Input
-                    id="parentName"
+                  <SmartInput
+                    field="parentName"
                     value={formData.parentName}
-                    onChange={(e) => handleInputChange("parentName", e.target.value)}
-                    required
+                    onChange={(value) => handleInputChange("parentName", value)}
+                    placeholder="Enter parent/guardian name"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="parentPhone">Phone Number *</Label>
-                  <Input
-                    id="parentPhone"
-                    type="tel"
+                  <SmartInput
+                    field="parentPhone"
                     value={formData.parentPhone}
-                    onChange={(e) => handleInputChange("parentPhone", e.target.value)}
-                    required
+                    onChange={(value) => handleInputChange("parentPhone", value)}
+                    placeholder="Enter phone number"
                   />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="parentEmail">Email Address *</Label>
-                <Input
-                  id="parentEmail"
-                  type="email"
+                <SmartInput
+                  field="parentEmail"
                   value={formData.parentEmail}
-                  onChange={(e) => handleInputChange("parentEmail", e.target.value)}
-                  required
+                  onChange={(value) => handleInputChange("parentEmail", value)}
+                  placeholder="Enter email address"
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="address">Home Address *</Label>
-                <Textarea
-                  id="address"
+                <SmartInput
+                  field="address"
+                  type="textarea"
                   value={formData.address}
-                  onChange={(e) => handleInputChange("address", e.target.value)}
-                  required
+                  onChange={(value) => handleInputChange("address", value)}
+                  placeholder="Enter complete home address"
                 />
               </div>
             </CardContent>
@@ -187,20 +222,22 @@ const ApplicationForm = () => {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="previousSchool">Previous School (if applicable)</Label>
-                <Input
-                  id="previousSchool"
+                <SmartInput
+                  field="previousSchool"
                   value={formData.previousSchool}
-                  onChange={(e) => handleInputChange("previousSchool", e.target.value)}
+                  onChange={(value) => handleInputChange("previousSchool", value)}
+                  placeholder="Enter previous school name"
                 />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="specialNeeds">Special Educational Needs</Label>
-                <Textarea
-                  id="specialNeeds"
-                  placeholder="Please describe any special needs or accommodations required"
+                <SmartInput
+                  field="specialNeeds"
+                  type="textarea"
                   value={formData.specialNeeds}
-                  onChange={(e) => handleInputChange("specialNeeds", e.target.value)}
+                  onChange={(value) => handleInputChange("specialNeeds", value)}
+                  placeholder="Please describe any special needs or accommodations required"
                 />
               </div>
 
@@ -216,12 +253,12 @@ const ApplicationForm = () => {
               {formData.hasAllergies && (
                 <div className="space-y-2">
                   <Label htmlFor="allergyDetails">Allergy/Medical Details *</Label>
-                  <Textarea
-                    id="allergyDetails"
-                    placeholder="Please provide details about allergies or medical conditions"
+                  <SmartInput
+                    field="allergyDetails"
+                    type="textarea"
                     value={formData.allergyDetails}
-                    onChange={(e) => handleInputChange("allergyDetails", e.target.value)}
-                    required
+                    onChange={(value) => handleInputChange("allergyDetails", value)}
+                    placeholder="Please provide details about allergies or medical conditions"
                   />
                 </div>
               )}
@@ -229,32 +266,32 @@ const ApplicationForm = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="emergencyContact">Emergency Contact Name *</Label>
-                  <Input
-                    id="emergencyContact"
+                  <SmartInput
+                    field="emergencyContact"
                     value={formData.emergencyContact}
-                    onChange={(e) => handleInputChange("emergencyContact", e.target.value)}
-                    required
+                    onChange={(value) => handleInputChange("emergencyContact", value)}
+                    placeholder="Enter emergency contact name"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="emergencyPhone">Emergency Contact Phone *</Label>
-                  <Input
-                    id="emergencyPhone"
-                    type="tel"
+                  <SmartInput
+                    field="emergencyPhone"
                     value={formData.emergencyPhone}
-                    onChange={(e) => handleInputChange("emergencyPhone", e.target.value)}
-                    required
+                    onChange={(value) => handleInputChange("emergencyPhone", value)}
+                    placeholder="Enter emergency contact phone"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="additionalInfo">Additional Information</Label>
-                <Textarea
-                  id="additionalInfo"
-                  placeholder="Any additional information you'd like to share"
+                <SmartInput
+                  field="additionalInfo"
+                  type="textarea"
                   value={formData.additionalInfo}
-                  onChange={(e) => handleInputChange("additionalInfo", e.target.value)}
+                  onChange={(value) => handleInputChange("additionalInfo", value)}
+                  placeholder="Any additional information you'd like to share"
                 />
               </div>
             </CardContent>

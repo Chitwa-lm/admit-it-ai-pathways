@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ArrowLeft, Upload, FileText, Check, X, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import DocumentVerifier from "@/components/DocumentVerifier";
+import type { DocumentVerification } from "@/services/nlpService";
 
 interface Document {
   id: string;
@@ -14,6 +15,7 @@ interface Document {
   uploaded: boolean;
   file?: File;
   error?: string;
+  verification?: DocumentVerification;
 }
 
 const DocumentUpload = () => {
@@ -70,7 +72,7 @@ const DocumentUpload = () => {
 
     setDocuments(prev => prev.map(doc => 
       doc.id === docId 
-        ? { ...doc, uploaded: true, file, error: undefined }
+        ? { ...doc, uploaded: true, file, error: undefined, verification: undefined }
         : doc
     ));
 
@@ -84,7 +86,7 @@ const DocumentUpload = () => {
     const doc = documents.find(d => d.id === docId);
     setDocuments(prev => prev.map(doc => 
       doc.id === docId 
-        ? { ...doc, uploaded: false, file: undefined, error: undefined }
+        ? { ...doc, uploaded: false, file: undefined, error: undefined, verification: undefined }
         : doc
     ));
 
@@ -94,6 +96,14 @@ const DocumentUpload = () => {
         description: `${doc.file.name} has been removed`,
       });
     }
+  };
+
+  const handleVerificationComplete = (docId: string, verification: DocumentVerification) => {
+    setDocuments(prev => prev.map(doc => 
+      doc.id === docId 
+        ? { ...doc, verification }
+        : doc
+    ));
   };
 
   const handleDragOver = (e: React.DragEvent, docId: string) => {
@@ -155,8 +165,8 @@ const DocumentUpload = () => {
             Back to Portal
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Document Upload</h1>
-            <p className="text-gray-600">Upload required documents for your child's application</p>
+            <h1 className="text-3xl font-bold text-gray-900">Smart Document Upload</h1>
+            <p className="text-gray-600">AI-powered document verification and upload</p>
           </div>
         </div>
 
@@ -177,7 +187,6 @@ const DocumentUpload = () => {
           </CardContent>
         </Card>
 
-        {/* Document Upload Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           {documents.map((doc) => (
             <Card key={doc.id} className="relative">
@@ -296,6 +305,16 @@ const DocumentUpload = () => {
                       className="hidden"
                       id={`replace-${doc.id}`}
                     />
+
+                    {/* AI Document Verification */}
+                    {doc.file && (
+                      <DocumentVerifier
+                        file={doc.file}
+                        onVerificationComplete={(verification) => 
+                          handleVerificationComplete(doc.id, verification)
+                        }
+                      />
+                    )}
                   </div>
                 )}
               </CardContent>
