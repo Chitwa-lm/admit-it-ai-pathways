@@ -4,12 +4,12 @@ export interface School {
   name: string;
   school_type: 'Public' | 'Private' | 'Charter';
   location: string;
-  district: string | null;
-  description: string | null;
+  district?: string | null;
+  description?: string | null;
   website_url?: string | null;
-  phone: string | null;
-  email: string | null;
-  address: string | null;
+  phone?: string | null;
+  email?: string | null;
+  address?: string | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -24,7 +24,7 @@ export interface AvailablePlace {
   academic_year: string;
   created_at: string;
   updated_at: string;
-  schools?: School;
+  schools?: Partial<School>;
 }
 
 export interface Profile {
@@ -48,7 +48,7 @@ export interface Student {
   last_name: string;
   date_of_birth?: string;
   grade: string;
-  current_school: string | null;
+  current_school?: string | null;
   special_needs?: string | null;
   emergency_contact_name?: string | null;
   emergency_contact_phone?: string | null;
@@ -74,7 +74,7 @@ export interface Application {
   priority_number: number | null;
   created_at: string;
   updated_at: string;
-  students?: Student;
-  schools?: School;
-  available_places?: AvailablePlace;
+  students?: Partial<Student>;
+  schools?: Partial<School>;
+  available_places?: Partial<AvailablePlace>;
 }
