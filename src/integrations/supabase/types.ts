@@ -278,13 +278,13 @@ export type Database = {
           address: string | null
           created_at: string | null
           description: string | null
-          district: string | null
           email: string | null
           id: string
-          location: string
           name: string
           phone: string | null
+          province: string | null
           school_type: Database["public"]["Enums"]["school_type"]
+          town: string | null
           updated_at: string | null
           website_url: string | null
         }
@@ -292,13 +292,13 @@ export type Database = {
           address?: string | null
           created_at?: string | null
           description?: string | null
-          district?: string | null
           email?: string | null
           id?: string
-          location: string
           name: string
           phone?: string | null
+          province?: string | null
           school_type: Database["public"]["Enums"]["school_type"]
+          town?: string | null
           updated_at?: string | null
           website_url?: string | null
         }
@@ -306,13 +306,13 @@ export type Database = {
           address?: string | null
           created_at?: string | null
           description?: string | null
-          district?: string | null
           email?: string | null
           id?: string
-          location?: string
           name?: string
           phone?: string | null
+          province?: string | null
           school_type?: Database["public"]["Enums"]["school_type"]
+          town?: string | null
           updated_at?: string | null
           website_url?: string | null
         }

@@ -1,10 +1,11 @@
 
+
 export interface School {
   id: string;
   name: string;
   school_type: 'Public' | 'Private' | 'Charter';
-  location: string;
-  district?: string | null;
+  town: string;
+  province?: string | null;
   description?: string | null;
   website_url?: string | null;
   phone?: string | null;
@@ -78,3 +79,4 @@ export interface Application {
   schools?: Partial<School>;
   available_places?: Partial<AvailablePlace>;
 }
+

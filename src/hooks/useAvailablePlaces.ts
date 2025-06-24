@@ -1,4 +1,5 @@
 
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { AvailablePlace } from '@/types/database';
@@ -16,8 +17,8 @@ export const useAvailablePlaces = () => {
             id,
             name,
             school_type,
-            location,
-            district,
+            town,
+            province,
             description,
             phone,
             email,
@@ -36,3 +37,4 @@ export const useAvailablePlaces = () => {
     },
   });
 };
+

@@ -13,7 +13,7 @@ const AvailablePlaces = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedGrade, setSelectedGrade] = useState("all");
   const [selectedType, setSelectedType] = useState("all");
-  const [selectedDistrict, setSelectedDistrict] = useState("all");
+  const [selectedProvince, setSelectedProvince] = useState("all");
 
   const { data: availablePlaces = [], isLoading, error } = useAvailablePlaces();
 
@@ -39,20 +39,20 @@ const AvailablePlaces = () => {
   // Get unique values for filters
   const grades = [...new Set(availablePlaces.map(place => place.grade))].sort();
   const schoolTypes = [...new Set(availablePlaces.map(place => place.schools?.school_type).filter(Boolean))];
-  const districts = [...new Set(availablePlaces.map(place => place.schools?.district).filter(Boolean))];
+  const provinces = [...new Set(availablePlaces.map(place => place.schools?.province).filter(Boolean))];
 
   // Filter places based on search criteria
   const filteredPlaces = availablePlaces.filter(place => {
     const matchesSearch = !searchTerm || 
       place.schools?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      place.schools?.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      place.schools?.district?.toLowerCase().includes(searchTerm.toLowerCase());
+      place.schools?.town?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      place.schools?.province?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesGrade = selectedGrade === "all" || place.grade === selectedGrade;
     const matchesType = selectedType === "all" || place.schools?.school_type === selectedType;
-    const matchesDistrict = selectedDistrict === "all" || place.schools?.district === selectedDistrict;
+    const matchesProvince = selectedProvince === "all" || place.schools?.province === selectedProvince;
     
-    return matchesSearch && matchesGrade && matchesType && matchesDistrict && place.available_spots > 0;
+    return matchesSearch && matchesGrade && matchesType && matchesProvince && place.available_spots > 0;
   });
 
   const getSchoolTypeColor = (type: string) => {
@@ -79,14 +79,14 @@ const AvailablePlaces = () => {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Available School Places</h2>
-        <p className="text-gray-600">Find and explore available enrollment opportunities across different schools and grade levels.</p>
+        <p className="text-gray-600">Find and explore available enrollment opportunities across different schools and grade levels in Zambia's 10 provinces.</p>
       </div>
 
       {/* Search and Filter Controls */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="lg:col-span-2">
           <Input
-            placeholder="Search schools, locations, or districts..."
+            placeholder="Search schools, towns, or provinces..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full"
@@ -114,14 +114,14 @@ const AvailablePlaces = () => {
             ))}
           </SelectContent>
         </Select>
-        <Select value={selectedDistrict} onValueChange={setSelectedDistrict}>
+        <Select value={selectedProvince} onValueChange={setSelectedProvince}>
           <SelectTrigger>
-            <SelectValue placeholder="District" />
+            <SelectValue placeholder="Province" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Districts</SelectItem>
-            {districts.map(district => (
-              <SelectItem key={district} value={district}>{district}</SelectItem>
+            <SelectItem value="all">All Provinces</SelectItem>
+            {provinces.map(province => (
+              <SelectItem key={province} value={province}>{province}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -137,7 +137,7 @@ const AvailablePlaces = () => {
             setSearchTerm("");
             setSelectedGrade("all");
             setSelectedType("all");
-            setSelectedDistrict("all");
+            setSelectedProvince("all");
           }}
           variant="outline"
           size="sm"
@@ -159,9 +159,9 @@ const AvailablePlaces = () => {
               </div>
               <div className="flex items-center text-sm text-gray-600">
                 <MapPin className="h-4 w-4 mr-1" />
-                <span>{place.schools?.location}</span>
-                {place.schools?.district && (
-                  <span className="ml-2 text-gray-400">• {place.schools?.district}</span>
+                <span>{place.schools?.town}</span>
+                {place.schools?.province && (
+                  <span className="ml-2 text-gray-400">• {place.schools?.province}</span>
                 )}
               </div>
             </CardHeader>
