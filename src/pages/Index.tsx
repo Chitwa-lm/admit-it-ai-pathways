@@ -5,9 +5,12 @@ import ApplicationStatus from "@/components/ApplicationStatus";
 import NLPAnalysis from "@/components/NLPAnalysis";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Users, FileText, Check, Clock, ExternalLink } from "lucide-react";
+import { Users, FileText, Check, Clock, ExternalLink, MapPin } from "lucide-react";
+import { useStats } from "@/hooks/useStats";
 
 const Index = () => {
+  const { data: stats, isLoading } = useStats();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -30,10 +33,10 @@ const Index = () => {
                 <span>Landing Page</span>
               </Button>
             </Link>
-            <Link to="/parent-login">
+            <Link to="/parent-portal">
               <Button className="flex items-center space-x-2">
                 <ExternalLink className="h-4 w-4" />
-                <span>Parent Login</span>
+                <span>Parent Portal</span>
               </Button>
             </Link>
           </div>
@@ -43,30 +46,30 @@ const Index = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatsCard
             title="New Applications"
-            value="156"
+            value={isLoading ? "..." : stats?.newApplications.toString() || "0"}
             change="+8%"
             icon={FileText}
             color="bg-blue-500"
           />
           <StatsCard
             title="Under Review"
-            value="42"
+            value={isLoading ? "..." : stats?.underReview.toString() || "0"}
             change="+3%"
             icon={Clock}
             color="bg-yellow-500"
           />
           <StatsCard
             title="Enrolled"
-            value="289"
+            value={isLoading ? "..." : stats?.enrolled.toString() || "0"}
             change="+12%"
             icon={Check}
             color="bg-green-500"
           />
           <StatsCard
-            title="Total Students"
-            value="1,247"
+            title="Available Spots"
+            value={isLoading ? "..." : stats?.totalAvailableSpots.toString() || "0"}
             change="+5%"
-            icon={Users}
+            icon={MapPin}
             color="bg-purple-500"
           />
         </div>

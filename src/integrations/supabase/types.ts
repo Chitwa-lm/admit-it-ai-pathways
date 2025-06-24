@@ -9,7 +9,371 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      application_history: {
+        Row: {
+          application_id: string
+          changed_by: string | null
+          created_at: string | null
+          id: string
+          notes: string | null
+          status: Database["public"]["Enums"]["application_status"]
+        }
+        Insert: {
+          application_id: string
+          changed_by?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          status: Database["public"]["Enums"]["application_status"]
+        }
+        Update: {
+          application_id?: string
+          changed_by?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          status?: Database["public"]["Enums"]["application_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_history_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "application_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      applications: {
+        Row: {
+          academic_readiness_score: number | null
+          admin_notes: string | null
+          available_place_id: string
+          created_at: string | null
+          id: string
+          learning_potential_score: number | null
+          overall_score: number | null
+          parent_engagement_score: number | null
+          parent_notes: string | null
+          priority_number: number | null
+          school_id: string
+          social_skills_score: number | null
+          status: Database["public"]["Enums"]["application_status"] | null
+          student_id: string
+          submitted_date: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          academic_readiness_score?: number | null
+          admin_notes?: string | null
+          available_place_id: string
+          created_at?: string | null
+          id?: string
+          learning_potential_score?: number | null
+          overall_score?: number | null
+          parent_engagement_score?: number | null
+          parent_notes?: string | null
+          priority_number?: number | null
+          school_id: string
+          social_skills_score?: number | null
+          status?: Database["public"]["Enums"]["application_status"] | null
+          student_id: string
+          submitted_date?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          academic_readiness_score?: number | null
+          admin_notes?: string | null
+          available_place_id?: string
+          created_at?: string | null
+          id?: string
+          learning_potential_score?: number | null
+          overall_score?: number | null
+          parent_engagement_score?: number | null
+          parent_notes?: string | null
+          priority_number?: number | null
+          school_id?: string
+          social_skills_score?: number | null
+          status?: Database["public"]["Enums"]["application_status"] | null
+          student_id?: string
+          submitted_date?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_available_place_id_fkey"
+            columns: ["available_place_id"]
+            isOneToOne: false
+            referencedRelation: "available_places"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      available_places: {
+        Row: {
+          academic_year: string
+          application_deadline: string
+          available_spots: number
+          created_at: string | null
+          grade: Database["public"]["Enums"]["grade_level"]
+          id: string
+          school_id: string
+          total_spots: number
+          updated_at: string | null
+        }
+        Insert: {
+          academic_year?: string
+          application_deadline: string
+          available_spots?: number
+          created_at?: string | null
+          grade: Database["public"]["Enums"]["grade_level"]
+          id?: string
+          school_id: string
+          total_spots?: number
+          updated_at?: string | null
+        }
+        Update: {
+          academic_year?: string
+          application_deadline?: string
+          available_spots?: number
+          created_at?: string | null
+          grade?: Database["public"]["Enums"]["grade_level"]
+          id?: string
+          school_id?: string
+          total_spots?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "available_places_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      documents: {
+        Row: {
+          application_id: string
+          document_type: Database["public"]["Enums"]["document_type"]
+          file_name: string
+          file_path: string
+          file_size: number | null
+          id: string
+          is_required: boolean | null
+          is_verified: boolean | null
+          uploaded_at: string | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          application_id: string
+          document_type: Database["public"]["Enums"]["document_type"]
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          id?: string
+          is_required?: boolean | null
+          is_verified?: boolean | null
+          uploaded_at?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          application_id?: string
+          document_type?: Database["public"]["Enums"]["document_type"]
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          is_required?: boolean | null
+          is_verified?: boolean | null
+          uploaded_at?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          phone: string | null
+          role: string | null
+          state: string | null
+          updated_at: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string | null
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          phone?: string | null
+          role?: string | null
+          state?: string | null
+          updated_at?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          phone?: string | null
+          role?: string | null
+          state?: string | null
+          updated_at?: string | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
+      schools: {
+        Row: {
+          address: string | null
+          created_at: string | null
+          description: string | null
+          district: string | null
+          email: string | null
+          id: string
+          location: string
+          name: string
+          phone: string | null
+          school_type: Database["public"]["Enums"]["school_type"]
+          updated_at: string | null
+          website_url: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string | null
+          description?: string | null
+          district?: string | null
+          email?: string | null
+          id?: string
+          location: string
+          name: string
+          phone?: string | null
+          school_type: Database["public"]["Enums"]["school_type"]
+          updated_at?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string | null
+          description?: string | null
+          district?: string | null
+          email?: string | null
+          id?: string
+          location?: string
+          name?: string
+          phone?: string | null
+          school_type?: Database["public"]["Enums"]["school_type"]
+          updated_at?: string | null
+          website_url?: string | null
+        }
+        Relationships: []
+      }
+      students: {
+        Row: {
+          created_at: string | null
+          current_school: string | null
+          date_of_birth: string
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          first_name: string
+          grade: Database["public"]["Enums"]["grade_level"]
+          id: string
+          last_name: string
+          medical_conditions: string | null
+          parent_id: string
+          special_needs: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_school?: string | null
+          date_of_birth: string
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          first_name: string
+          grade: Database["public"]["Enums"]["grade_level"]
+          id?: string
+          last_name: string
+          medical_conditions?: string | null
+          parent_id: string
+          special_needs?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_school?: string | null
+          date_of_birth?: string
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          first_name?: string
+          grade?: Database["public"]["Enums"]["grade_level"]
+          id?: string
+          last_name?: string
+          medical_conditions?: string | null
+          parent_id?: string
+          special_needs?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "students_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +382,33 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      application_status:
+        | "pending"
+        | "under_review"
+        | "enrolled"
+        | "waitlisted"
+        | "rejected"
+      document_type:
+        | "birth_certificate"
+        | "immunization_records"
+        | "transcripts"
+        | "proof_of_residence"
+        | "other"
+      grade_level:
+        | "Kindergarten"
+        | "1st Grade"
+        | "2nd Grade"
+        | "3rd Grade"
+        | "4th Grade"
+        | "5th Grade"
+        | "6th Grade"
+        | "7th Grade"
+        | "8th Grade"
+        | "9th Grade"
+        | "10th Grade"
+        | "11th Grade"
+        | "12th Grade"
+      school_type: "Public" | "Private" | "Charter"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +523,37 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      application_status: [
+        "pending",
+        "under_review",
+        "enrolled",
+        "waitlisted",
+        "rejected",
+      ],
+      document_type: [
+        "birth_certificate",
+        "immunization_records",
+        "transcripts",
+        "proof_of_residence",
+        "other",
+      ],
+      grade_level: [
+        "Kindergarten",
+        "1st Grade",
+        "2nd Grade",
+        "3rd Grade",
+        "4th Grade",
+        "5th Grade",
+        "6th Grade",
+        "7th Grade",
+        "8th Grade",
+        "9th Grade",
+        "10th Grade",
+        "11th Grade",
+        "12th Grade",
+      ],
+      school_type: ["Public", "Private", "Charter"],
+    },
   },
 } as const
