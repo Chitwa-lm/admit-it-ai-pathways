@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { UserPlus, LogIn, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 const ParentLogin = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -17,6 +18,7 @@ const ParentLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { mockSignIn } = useAuth();
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,10 +45,13 @@ const ParentLogin = () => {
       return;
     }
 
-    // Mock authentication - in real app, this would connect to backend
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Use mock authentication
+      const { data, error } = await mockSignIn(email, password);
+      
+      if (error) {
+        throw error;
+      }
       
       toast({
         title: "Success",

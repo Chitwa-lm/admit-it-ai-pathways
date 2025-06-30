@@ -9,7 +9,17 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    // Check for mock auth in localStorage first
+    const mockAuth = localStorage.getItem('mockAuth');
+    if (mockAuth) {
+      const mockUser = JSON.parse(mockAuth);
+      setUser(mockUser);
+      setSession({ user: mockUser } as Session);
+      setLoading(false);
+      return;
+    }
+
+    // Set up auth state listener for real Supabase auth
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
@@ -18,7 +28,7 @@ export const useAuth = () => {
       }
     );
 
-    // THEN check for existing session
+    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -53,8 +63,38 @@ export const useAuth = () => {
     return { data, error };
   };
 
+  const mockSignIn = async (email: string, password: string) => {
+    // Mock authentication for development
+    const mockUser = {
+      id: 'mock-user-id',
+      email: email,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      app_metadata: {},
+      user_metadata: {
+        first_name: 'Mock',
+        last_name: 'User'
+      }
+    };
+    
+    localStorage.setItem('mockAuth', JSON.stringify(mockUser));
+    setUser(mockUser as User);
+    setSession({ user: mockUser } as Session);
+    
+    return { data: { user: mockUser }, error: null };
+  };
+
   const signOut = async () => {
+    // Clear mock auth
+    localStorage.removeItem('mockAuth');
+    
+    // Clear real auth
     const { error } = await supabase.auth.signOut();
+    
+    // Reset state
+    setUser(null);
+    setSession(null);
+    
     return { error };
   };
 
@@ -64,6 +104,7 @@ export const useAuth = () => {
     loading,
     signUp,
     signIn,
+    mockSignIn,
     signOut,
   };
 };
