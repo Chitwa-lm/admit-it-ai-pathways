@@ -273,6 +273,47 @@ export type Database = {
         }
         Relationships: []
       }
+      school_admins: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          role: Database["public"]["Enums"]["app_role"]
+          school_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          role?: Database["public"]["Enums"]["app_role"]
+          school_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          role?: Database["public"]["Enums"]["app_role"]
+          school_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_admins_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       schools: {
         Row: {
           address: string | null
@@ -379,9 +420,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_admin_school_id: {
+        Args: { user_id: string }
+        Returns: string
+      }
+      is_school_admin: {
+        Args: { user_id: string; school_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "parent" | "school_admin" | "super_admin"
       application_status:
         | "pending"
         | "under_review"
@@ -524,6 +573,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["parent", "school_admin", "super_admin"],
       application_status: [
         "pending",
         "under_review",

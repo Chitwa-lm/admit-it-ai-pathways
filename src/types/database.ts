@@ -1,5 +1,4 @@
 
-
 export interface School {
   id: string;
   name: string;
@@ -80,3 +79,14 @@ export interface Application {
   available_places?: Partial<AvailablePlace>;
 }
 
+export interface SchoolAdmin {
+  id: string;
+  user_id: string;
+  school_id: string;
+  role: 'parent' | 'school_admin' | 'super_admin';
+  created_at: string;
+  updated_at: string;
+  created_by?: string | null;
+  is_active: boolean;
+  schools?: Partial<School>;
+}

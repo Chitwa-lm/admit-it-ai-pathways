@@ -10,6 +10,7 @@ import ParentLogin from "./pages/ParentLogin";
 import ParentPortal from "./pages/ParentPortal";
 import ApplicationForm from "./pages/ApplicationForm";
 import DocumentUpload from "./pages/DocumentUpload";
+import SchoolAdminDashboard from "./pages/SchoolAdminDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/parent-portal" element={<ParentPortal />} />
           <Route path="/application" element={<ApplicationForm />} />
           <Route path="/documents" element={<DocumentUpload />} />
+          <Route path="/admin" element={<SchoolAdminDashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
