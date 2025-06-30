@@ -23,39 +23,6 @@ import {
 const Landing = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* Navigation Header */}
-      <header className="bg-white/95 backdrop-blur-lg shadow-lg border-b border-slate-200/50 px-6 py-5 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <div className="bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-2xl">
-                <School className="h-7 w-7" />
-              </div>
-              <div className="absolute -top-1 -right-1 bg-gradient-to-r from-orange-400 to-red-400 w-4 h-4 rounded-full shadow-lg"></div>
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-800 via-blue-700 to-indigo-700 bg-clip-text text-transparent">
-                AdmitAI Pro
-              </h1>
-              <p className="text-sm text-slate-600 font-medium">Smart K-12 Enrollment Platform</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <Link to="/parent-login">
-              <Button variant="outline" className="font-semibold border-2 hover:bg-slate-50 px-6">
-                Parent Login
-              </Button>
-            </Link>
-            <Link to="/admin">
-              <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 font-semibold shadow-xl px-6">
-                School Admin
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
-
       {/* Hero Section */}
       <section className="relative py-20 px-6 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-indigo-600/5 to-purple-600/5"></div>
