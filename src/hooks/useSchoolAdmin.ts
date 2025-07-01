@@ -98,13 +98,8 @@ export const useSchoolApplications = () => {
         `)
         .order('submitted_date', { ascending: false });
 
-      // If not super admin, filter by school
-      if (!isSuperAdmin) {
-        // For regular school admins, we would filter by their school
-        // For now in mock mode, return empty array for non-super admins
-        return [];
-      }
-
+      // If not super admin, we would filter by school in a real implementation
+      // For now, super admin sees all applications
       const { data, error } = await query;
 
       if (error) {
@@ -112,6 +107,7 @@ export const useSchoolApplications = () => {
         throw error;
       }
 
+      console.log('Applications fetched:', data?.length || 0);
       return data || [];
     },
     enabled: !!user,

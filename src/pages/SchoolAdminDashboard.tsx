@@ -1,23 +1,31 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSchoolAdmin, useSchoolApplications } from '@/hooks/useSchoolAdmin';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { School, Users, FileText, Clock, CheckCircle, XCircle, Crown } from 'lucide-react';
+import { School, Users, FileText, Clock, CheckCircle, XCircle, Crown, Database } from 'lucide-react';
 import ApplicationsTable from '@/components/admin/ApplicationsTable';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminStats from '@/components/admin/AdminStats';
+import { createSampleData } from '@/utils/sampleData';
 
 const SchoolAdminDashboard = () => {
   const { user, signOut } = useAuth();
   const { data: adminData, isLoading: adminLoading } = useSchoolAdmin();
-  const { data: applications, isLoading: applicationsLoading } = useSchoolApplications();
+  const { data: applications, isLoading: applicationsLoading, refetch } = useSchoolApplications();
 
   // Check if this is the super admin
   const isSuperAdmin = user?.email === 'chitwamakupe15@gmail.com';
   const isMockAdmin = user && user.email; // Any logged-in user can be admin in development
+
+  // Function to create sample data for testing
+  const handleCreateSampleData = async () => {
+    await createSampleData();
+    // Refetch applications after creating sample data
+    refetch();
+  };
 
   if (adminLoading) {
     return (
@@ -110,6 +118,18 @@ const SchoolAdminDashboard = () => {
               </p>
             </div>
           </div>
+          
+          {/* Add sample data button for testing */}
+          {isSuperAdmin && (
+            <Button 
+              onClick={handleCreateSampleData}
+              variant="outline"
+              className="flex items-center space-x-2"
+            >
+              <Database className="h-4 w-4" />
+              <span>Create Sample Data</span>
+            </Button>
+          )}
         </div>
 
         <AdminStats applications={applications || []} />
