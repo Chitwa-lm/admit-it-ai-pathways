@@ -6,14 +6,21 @@ import { Input } from '@/components/ui/input';
 import { MessageCircle, X, Send, HelpCircle, FileText, Search, Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+type Message = {
+  id: string;
+  text: string;
+  sender: 'bot' | 'user';
+  timestamp: Date;
+};
+
 const ParentChatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       text: "Hi! I'm here to help you with your child's enrollment application. What can I assist you with today?",
-      sender: 'bot' as const,
+      sender: 'bot',
       timestamp: new Date()
     }
   ]);
@@ -48,7 +55,7 @@ const ParentChatbot = () => {
     setMessages(prev => [...prev, {
       id: Date.now().toString(),
       text: botResponse,
-      sender: 'bot' as const,
+      sender: 'bot',
       timestamp: new Date()
     }]);
   };
@@ -56,10 +63,10 @@ const ParentChatbot = () => {
   const handleSendMessage = () => {
     if (!message.trim()) return;
 
-    const userMessage = {
+    const userMessage: Message = {
       id: Date.now().toString(),
       text: message,
-      sender: 'user' as const,
+      sender: 'user',
       timestamp: new Date()
     };
 
@@ -68,10 +75,10 @@ const ParentChatbot = () => {
 
     // Simple bot response (in a real app, this would connect to an AI service)
     setTimeout(() => {
-      const botResponse = {
+      const botResponse: Message = {
         id: (Date.now() + 1).toString(),
         text: "Thank you for your question! For detailed assistance, please contact our support team at support@admitai.pro or call (555) 123-4567. We're here to help make your enrollment process smooth and easy!",
-        sender: 'bot' as const,
+        sender: 'bot',
         timestamp: new Date()
       };
       setMessages(prev => [...prev, botResponse]);
