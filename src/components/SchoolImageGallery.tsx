@@ -3,15 +3,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Users, Calendar } from 'lucide-react';
-
-interface School {
-  id: string;
-  name: string;
-  school_type: string;
-  town: string;
-  province: string;
-  description?: string;
-}
+import type { School } from '@/types/database';
 
 interface SchoolImageGalleryProps {
   schools: School[];
@@ -55,7 +47,7 @@ const SchoolImageGallery: React.FC<SchoolImageGalleryProps> = ({ schools }) => {
             </h3>
             <div className="flex items-center text-slate-600 mb-2">
               <MapPin className="h-4 w-4 mr-1" />
-              <span className="text-sm">{school.town}, {school.province}</span>
+              <span className="text-sm">{school.town}{school.province ? `, ${school.province}` : ''}</span>
             </div>
             {school.description && (
               <p className="text-sm text-slate-600 mb-3 line-clamp-2">
