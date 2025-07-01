@@ -39,6 +39,18 @@ const Navigation = () => {
         </div>
         
         <div className="flex items-center space-x-4">
+          {/* Home button - always visible */}
+          <Link to="/">
+            <Button 
+              variant={isActive('/') ? "default" : "ghost"} 
+              size="sm"
+              className="flex items-center space-x-2"
+            >
+              <Home className="h-4 w-4" />
+              <span>Home</span>
+            </Button>
+          </Link>
+
           {user ? (
             <>
               <Link to="/dashboard">
