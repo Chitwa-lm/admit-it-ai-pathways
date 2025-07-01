@@ -1,10 +1,10 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface ApplicationSuggestion {
   field: string;
   suggestion: string;
   confidence: number;
+  type?: 'spelling' | 'validation' | 'enhancement';
 }
 
 export interface DocumentVerification {
@@ -20,39 +20,167 @@ export interface PredictiveText {
   context: string;
 }
 
+export interface SpellCheckResult {
+  isCorrect: boolean;
+  suggestions: string[];
+  correctedText: string;
+}
+
 class NLPService {
   private apiKey: string | null = null;
+  private commonWords: Set<string>;
+  private educationTerms: Set<string>;
 
   constructor() {
     this.initializeApiKey();
+    this.initializeDictionaries();
   }
 
   private async initializeApiKey() {
-    // In a real implementation, this would come from Supabase secrets
-    // For now, we'll simulate the API calls
     this.apiKey = 'simulated-api-key';
   }
 
-  async analyzeApplicationText(text: string, field: string): Promise<ApplicationSuggestion[]> {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+  private initializeDictionaries() {
+    // Common English words dictionary
+    this.commonWords = new Set([
+      'the', 'be', 'to', 'of', 'and', 'a', 'in', 'that', 'have', 'for', 'not', 'with', 'he', 'as', 'you', 'do', 'at',
+      'this', 'but', 'his', 'by', 'from', 'they', 'she', 'or', 'an', 'will', 'my', 'one', 'all', 'would', 'there',
+      'their', 'what', 'so', 'up', 'out', 'if', 'about', 'who', 'get', 'which', 'go', 'me', 'when', 'make', 'can',
+      'like', 'time', 'no', 'just', 'him', 'know', 'take', 'people', 'into', 'year', 'your', 'good', 'some', 'could',
+      'them', 'see', 'other', 'than', 'then', 'now', 'look', 'only', 'come', 'its', 'over', 'think', 'also', 'back',
+      'after', 'use', 'two', 'how', 'our', 'work', 'first', 'well', 'way', 'even', 'new', 'want', 'because', 'any',
+      'these', 'give', 'day', 'most', 'us', 'is', 'was', 'are', 'been', 'has', 'had', 'were', 'said', 'each', 'which',
+      'student', 'school', 'education', 'grade', 'teacher', 'parent', 'family', 'child', 'children', 'learning'
+    ]);
 
+    // Education-specific terms
+    this.educationTerms = new Set([
+      'kindergarten', 'elementary', 'middle', 'high', 'primary', 'secondary', 'preschool', 'daycare',
+      'curriculum', 'mathematics', 'science', 'english', 'history', 'geography', 'physical', 'art', 'music',
+      'special', 'needs', 'iep', 'allergies', 'medication', 'emergency', 'contact', 'address', 'phone',
+      'immunization', 'vaccination', 'medical', 'records', 'transcript', 'enrollment', 'admission',
+      'application', 'tuition', 'scholarship', 'transportation', 'bus', 'lunch', 'cafeteria'
+    ]);
+  }
+
+  private spellCheck(text: string): SpellCheckResult {
+    const words = text.toLowerCase().split(/\s+/);
+    const misspelledWords: string[] = [];
+    const suggestions: string[] = [];
+    
+    words.forEach(word => {
+      const cleanWord = word.replace(/[^\w]/g, '');
+      if (cleanWord.length > 2 && !this.commonWords.has(cleanWord) && !this.educationTerms.has(cleanWord)) {
+        // Simple spell checking logic
+        const possibleCorrections = this.findSimilarWords(cleanWord);
+        if (possibleCorrections.length > 0) {
+          misspelledWords.push(word);
+          suggestions.push(...possibleCorrections);
+        }
+      }
+    });
+
+    const isCorrect = misspelledWords.length === 0;
+    const correctedText = isCorrect ? text : this.correctText(text, misspelledWords, suggestions);
+
+    return {
+      isCorrect,
+      suggestions: [...new Set(suggestions)].slice(0, 5),
+      correctedText
+    };
+  }
+
+  private findSimilarWords(word: string): string[] {
+    const suggestions: string[] = [];
+    
+    // Check education terms first
+    for (const term of this.educationTerms) {
+      if (this.calculateSimilarity(word, term) > 0.7) {
+        suggestions.push(term);
+      }
+    }
+    
+    // Then check common words
+    for (const commonWord of this.commonWords) {
+      if (commonWord.length > 3 && this.calculateSimilarity(word, commonWord) > 0.8) {
+        suggestions.push(commonWord);
+      }
+    }
+    
+    return suggestions.slice(0, 3);
+  }
+
+  private calculateSimilarity(word1: string, word2: string): number {
+    const longer = word1.length > word2.length ? word1 : word2;
+    const shorter = word1.length > word2.length ? word2 : word1;
+    
+    if (longer.length === 0) return 1.0;
+    
+    const distance = this.levenshteinDistance(longer, shorter);
+    return (longer.length - distance) / longer.length;
+  }
+
+  private levenshteinDistance(str1: string, str2: string): number {
+    const matrix = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
+    
+    for (let i = 0; i <= str1.length; i++) matrix[0][i] = i;
+    for (let j = 0; j <= str2.length; j++) matrix[j][0] = j;
+    
+    for (let j = 1; j <= str2.length; j++) {
+      for (let i = 1; i <= str1.length; i++) {
+        const indicator = str1[i - 1] === str2[j - 1] ? 0 : 1;
+        matrix[j][i] = Math.min(
+          matrix[j][i - 1] + 1,
+          matrix[j - 1][i] + 1,
+          matrix[j - 1][i - 1] + indicator
+        );
+      }
+    }
+    
+    return matrix[str2.length][str1.length];
+  }
+
+  private correctText(text: string, misspelledWords: string[], suggestions: string[]): string {
+    let correctedText = text;
+    misspelledWords.forEach((misspelled, index) => {
+      if (suggestions[index]) {
+        correctedText = correctedText.replace(new RegExp(`\\b${misspelled}\\b`, 'gi'), suggestions[index]);
+      }
+    });
+    return correctedText;
+  }
+
+  async analyzeApplicationText(text: string, field: string): Promise<ApplicationSuggestion[]> {
+    await new Promise(resolve => setTimeout(resolve, 500));
     const suggestions: ApplicationSuggestion[] = [];
 
-    // Basic validation and suggestions based on field type
+    // Spell checking
+    const spellCheckResult = this.spellCheck(text);
+    if (!spellCheckResult.isCorrect) {
+      suggestions.push({
+        field,
+        suggestion: `Possible spelling corrections: ${spellCheckResult.suggestions.join(', ')}`,
+        confidence: 0.8,
+        type: 'spelling'
+      });
+    }
+
+    // Field-specific validation
     switch (field) {
       case 'studentName':
         if (text.length < 2) {
           suggestions.push({
             field,
             suggestion: 'Please enter the student\'s full name (first and last name)',
-            confidence: 0.9
+            confidence: 0.9,
+            type: 'validation'
           });
         } else if (!text.includes(' ')) {
           suggestions.push({
             field,
             suggestion: 'Consider adding both first and last name',
-            confidence: 0.7
+            confidence: 0.7,
+            type: 'enhancement'
           });
         }
         break;
@@ -63,7 +191,8 @@ class NLPService {
           suggestions.push({
             field,
             suggestion: 'Please enter a valid email address (e.g., parent@example.com)',
-            confidence: 0.95
+            confidence: 0.95,
+            type: 'validation'
           });
         }
         break;
@@ -74,7 +203,8 @@ class NLPService {
           suggestions.push({
             field,
             suggestion: 'Please enter a valid phone number with area code',
-            confidence: 0.85
+            confidence: 0.85,
+            type: 'validation'
           });
         }
         break;
@@ -84,7 +214,8 @@ class NLPService {
           suggestions.push({
             field,
             suggestion: 'Please provide a complete address including street, city, and postal code',
-            confidence: 0.8
+            confidence: 0.8,
+            type: 'validation'
           });
         }
         break;
