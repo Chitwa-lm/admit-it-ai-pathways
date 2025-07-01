@@ -117,9 +117,9 @@ const Navigation = () => {
                   Parent Login
                 </Button>
               </Link>
-              <Link to="/admin">
-                <Button size="sm" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 font-medium">
-                  Admin
+              <Link to="/admin-login">
+                <Button size="sm" className="bg-gradient-to-r from-slate-600 to-slate-800 hover:from-slate-700 hover:to-slate-900 font-medium">
+                  Admin Login
                 </Button>
               </Link>
             </>

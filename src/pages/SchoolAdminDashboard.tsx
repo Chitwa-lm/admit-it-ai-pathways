@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useSchoolAdmin, useSchoolApplications } from '@/hooks/useSchoolAdmin';
 import { useAuth } from '@/hooks/useAuth';
@@ -39,8 +38,8 @@ const SchoolAdminDashboard = () => {
             <p className="text-gray-600 mb-4">
               You need to be signed in to access the admin dashboard.
             </p>
-            <Button onClick={() => window.location.href = '/parent-login'}>
-              Sign In
+            <Button onClick={() => window.location.href = '/admin-login'}>
+              Admin Sign In
             </Button>
           </CardContent>
         </Card>

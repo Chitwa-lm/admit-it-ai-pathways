@@ -9,6 +9,7 @@ import Navigation from "./components/Navigation";
 import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import ParentLogin from "./pages/ParentLogin";
+import AdminLogin from "./pages/AdminLogin";
 import ParentPortal from "./pages/ParentPortal";
 import ApplicationForm from "./pages/ApplicationForm";
 import DocumentUpload from "./pages/DocumentUpload";
@@ -30,6 +31,7 @@ const App = () => (
               <Route path="/" element={<Landing />} />
               <Route path="/dashboard" element={<Index />} />
               <Route path="/parent-login" element={<ParentLogin />} />
+              <Route path="/admin-login" element={<AdminLogin />} />
               <Route path="/parent-portal" element={<ParentPortal />} />
               <Route path="/application" element={<ApplicationForm />} />
               <Route path="/documents" element={<DocumentUpload />} />
