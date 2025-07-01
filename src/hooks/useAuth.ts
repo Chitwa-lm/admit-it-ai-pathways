@@ -64,7 +64,7 @@ export const useAuth = () => {
   };
 
   const mockSignIn = async (email: string, password: string) => {
-    // Mock authentication for development
+    // Mock authentication for development - create a properly typed mock user
     const mockUser = {
       id: 'mock-user-id',
       email: email,
@@ -74,12 +74,34 @@ export const useAuth = () => {
       user_metadata: {
         first_name: 'Mock',
         last_name: 'User'
-      }
-    };
+      },
+      aud: 'authenticated',
+      role: 'authenticated',
+      email_confirmed_at: new Date().toISOString(),
+      phone: null,
+      confirmed_at: new Date().toISOString(),
+      last_sign_in_at: new Date().toISOString(),
+      recovery_sent_at: null,
+      new_email: null,
+      email_change_sent_at: null,
+      new_phone: null,
+      phone_change_sent_at: null,
+      reauthentication_sent_at: null,
+      is_anonymous: false
+    } as User;
+    
+    const mockSession = {
+      access_token: 'mock-access-token',
+      refresh_token: 'mock-refresh-token',
+      expires_in: 3600,
+      expires_at: Math.floor(Date.now() / 1000) + 3600,
+      token_type: 'bearer',
+      user: mockUser
+    } as Session;
     
     localStorage.setItem('mockAuth', JSON.stringify(mockUser));
-    setUser(mockUser as User);
-    setSession({ user: mockUser } as Session);
+    setUser(mockUser);
+    setSession(mockSession);
     
     return { data: { user: mockUser }, error: null };
   };
