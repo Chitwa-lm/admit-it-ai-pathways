@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { School, LogOut, Home, Users, FileText, Settings } from 'lucide-react';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const Navigation = () => {
   const { user, signOut } = useAuth();
@@ -18,7 +19,7 @@ const Navigation = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="bg-white/95 backdrop-blur-lg shadow-xl border-b border-slate-200/50 px-6 py-4 sticky top-0 z-50">
+    <nav className="bg-background/95 backdrop-blur-lg shadow-xl border-b border-border px-6 py-4 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Link to="/" className="flex items-center space-x-3">
@@ -29,10 +30,10 @@ const Navigation = () => {
               <div className="absolute -top-1 -right-1 bg-gradient-to-r from-orange-400 to-red-400 w-3 h-3 rounded-full shadow-sm"></div>
             </div>
             <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-slate-800 via-blue-700 to-indigo-700 bg-clip-text text-transparent">
+              <h1 className="text-xl font-bold bg-gradient-to-r from-foreground via-blue-700 to-indigo-700 bg-clip-text text-transparent">
                 AdmitAI Pro
               </h1>
-              <p className="text-xs text-slate-600 font-medium">K-12 Enrollment Platform</p>
+              <p className="text-xs text-muted-foreground font-medium">K-12 Enrollment Platform</p>
             </div>
           </Link>
         </div>
@@ -84,11 +85,13 @@ const Navigation = () => {
                 </Button>
               </Link>
               
+              <ThemeToggle />
+              
               <Button 
                 onClick={handleLogout}
                 variant="outline" 
                 size="sm"
-                className="flex items-center space-x-2 border-2 hover:bg-red-50 hover:border-red-200 hover:text-red-600"
+                className="flex items-center space-x-2 border-2 hover:bg-destructive/10 hover:border-destructive/50 hover:text-destructive"
               >
                 <LogOut className="h-4 w-4" />
                 <span>Logout</span>
@@ -96,6 +99,7 @@ const Navigation = () => {
             </>
           ) : (
             <>
+              <ThemeToggle />
               <Link to="/parent-login">
                 <Button variant="outline" size="sm" className="font-medium border-2">
                   Parent Login

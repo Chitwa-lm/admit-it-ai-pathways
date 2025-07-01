@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { UserPlus, LogIn, FileText, Upload, CheckCircle, Search } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import AvailablePlaces from "@/components/AvailablePlaces";
+import ParentChatbot from "@/components/ParentChatbot";
 
 const ParentPortal = () => {
   const { user } = useAuth();
@@ -25,32 +26,32 @@ const ParentPortal = () => {
 
   if (user) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white border-b">
+      <div className="min-h-screen bg-background">
+        <div className="bg-card border-b border-border">
           <div className="max-w-6xl mx-auto px-6 py-6">
             <div className="mb-6">
-              <h1 className="text-3xl font-bold text-gray-900">Parent Portal</h1>
-              <p className="text-gray-600 mt-2">Welcome back! Manage your child's admission application.</p>
+              <h1 className="text-3xl font-bold text-foreground">Parent Portal</h1>
+              <p className="text-muted-foreground mt-2">Welcome back! Manage your child's admission application.</p>
             </div>
             
             {/* Navigation Tabs */}
-            <div className="flex space-x-6 border-b">
+            <div className="flex space-x-6 border-b border-border">
               <button
                 onClick={() => setActiveTab("dashboard")}
-                className={`pb-3 px-1 border-b-2 font-medium text-sm ${
+                className={`pb-3 px-1 border-b-2 font-medium text-sm transition-colors ${
                   activeTab === "dashboard"
                     ? "border-primary text-primary"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Dashboard
               </button>
               <button
                 onClick={() => setActiveTab("search")}
-                className={`pb-3 px-1 border-b-2 font-medium text-sm ${
+                className={`pb-3 px-1 border-b-2 font-medium text-sm transition-colors ${
                   activeTab === "search"
                     ? "border-primary text-primary"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Available Places
@@ -63,7 +64,7 @@ const ParentPortal = () => {
           {activeTab === "dashboard" && (
             <div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Card className="hover:shadow-lg transition-shadow">
+                <Card className="hover:shadow-lg transition-shadow border-border">
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                       <FileText className="h-5 w-5 text-primary" />
@@ -71,8 +72,8 @@ const ParentPortal = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-600 mb-4">
-                      Begin your child's enrollment application for the upcoming academic year.
+                    <p className="text-muted-foreground mb-4">
+                      Begin your child's enrollment application. When you start an application without searching for specific places, it will automatically be sent to all applicable schools based on your preferences.
                     </p>
                     <Link to="/application">
                       <Button className="w-full">Start Application</Button>
@@ -80,7 +81,7 @@ const ParentPortal = () => {
                   </CardContent>
                 </Card>
 
-                <Card className="hover:shadow-lg transition-shadow">
+                <Card className="hover:shadow-lg transition-shadow border-border">
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                       <Upload className="h-5 w-5 text-primary" />
@@ -88,7 +89,7 @@ const ParentPortal = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-600 mb-4">
+                    <p className="text-muted-foreground mb-4">
                       Upload required documents including birth certificate, immunization records, and transcripts.
                     </p>
                     <Link to="/documents">
@@ -97,7 +98,7 @@ const ParentPortal = () => {
                   </CardContent>
                 </Card>
 
-                <Card className="hover:shadow-lg transition-shadow">
+                <Card className="hover:shadow-lg transition-shadow border-border">
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                       <CheckCircle className="h-5 w-5 text-green-600" />
@@ -105,7 +106,7 @@ const ParentPortal = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-600 mb-4">
+                    <p className="text-muted-foreground mb-4">
                       Track the progress of your application and view any updates or requirements.
                     </p>
                     <div className="space-y-2">
@@ -119,13 +120,13 @@ const ParentPortal = () => {
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm">Review</span>
-                        <span className="text-sm text-gray-400 font-medium">Waiting</span>
+                        <span className="text-sm text-muted-foreground font-medium">Waiting</span>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="hover:shadow-lg transition-shadow">
+                <Card className="hover:shadow-lg transition-shadow border-border">
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                       <Search className="h-5 w-5 text-primary" />
@@ -133,8 +134,8 @@ const ParentPortal = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-600 mb-4">
-                      Search for available places in schools across different grades and districts.
+                    <p className="text-muted-foreground mb-4">
+                      Search for available places in schools across different grades and districts before applying.
                     </p>
                     <Button 
                       onClick={() => setActiveTab("search")}
@@ -153,17 +154,20 @@ const ParentPortal = () => {
             <AvailablePlaces />
           )}
         </div>
+
+        {/* Floating Chatbot */}
+        <ParentChatbot />
       </div>
     );
   }
 
   // If not logged in, redirect to login page
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <Card className="w-full max-w-md border-border">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Access Required</CardTitle>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Please log in to access the parent portal
           </p>
         </CardHeader>
