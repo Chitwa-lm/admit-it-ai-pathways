@@ -32,6 +32,74 @@ const ParentChatbot = () => {
     { icon: HelpCircle, text: "Application status", action: "check-status" }
   ];
 
+  const generateBotResponse = (userMessage: string): string => {
+    const msg = userMessage.toLowerCase();
+    
+    // Application-related questions
+    if (msg.includes('application') || msg.includes('apply')) {
+      if (msg.includes('start') || msg.includes('begin') || msg.includes('how to')) {
+        return "To start an application, click on 'Start Application' from your dashboard. The application will automatically be sent to all applicable schools based on your preferences and location. You don't need to search for specific places first - the system will match you with suitable schools!";
+      }
+      if (msg.includes('status') || msg.includes('progress')) {
+        return "You can check your application status on the dashboard. It shows three stages: Application Form (Complete), Documents (Pending), and Review (Waiting). Each stage will update as your application progresses through the system.";
+      }
+      if (msg.includes('multiple') || msg.includes('many schools')) {
+        return "When you start an application without searching for specific places, it automatically goes to all applicable schools in your area. This saves you time and ensures you don't miss any opportunities!";
+      }
+    }
+    
+    // Document-related questions
+    if (msg.includes('document') || msg.includes('upload') || msg.includes('paper')) {
+      if (msg.includes('what') || msg.includes('need') || msg.includes('required')) {
+        return "Required documents typically include: birth certificate, immunization records, previous school transcripts, and proof of residence. You can upload these through the 'Upload Documents' section on your dashboard.";
+      }
+      if (msg.includes('format') || msg.includes('type')) {
+        return "We accept PDF, JPG, and PNG formats. Make sure your documents are clear and readable. Each file should be under 10MB in size.";
+      }
+      if (msg.includes('missing') || msg.includes('forgot')) {
+        return "If you're missing a document, you can upload it later. The system will notify you of any missing requirements. Contact your previous school or relevant authorities to obtain missing documents.";
+      }
+    }
+    
+    // School-related questions
+    if (msg.includes('school') || msg.includes('place') || msg.includes('available')) {
+      if (msg.includes('find') || msg.includes('search') || msg.includes('available')) {
+        return "Use the 'Available Places' tab to search for schools with open enrollment. You can filter by grade level, district, and school type. However, if you start an application without searching, it goes to all applicable schools automatically!";
+      }
+      if (msg.includes('choice') || msg.includes('prefer')) {
+        return "You can set your school preferences in the application form. The system will prioritize your preferred schools while still sending your application to all applicable options.";
+      }
+    }
+    
+    // Timeline and deadlines
+    if (msg.includes('deadline') || msg.includes('when') || msg.includes('time')) {
+      return "Application deadlines vary by school and grade level. You can see specific deadlines in the Available Places section. It's best to apply as early as possible to ensure your application is processed in time.";
+    }
+    
+    // Grades and age requirements
+    if (msg.includes('grade') || msg.includes('age') || msg.includes('kindergarten') || msg.includes('elementary')) {
+      return "Grade placement is typically based on your child's age and previous school records. Kindergarten is usually for ages 5-6, elementary for ages 6-11. The system will help determine the appropriate grade level during the application process.";
+    }
+    
+    // Help and support
+    if (msg.includes('help') || msg.includes('support') || msg.includes('contact') || msg.includes('phone')) {
+      return "For additional help, you can contact our support team at support@admitai.pro or call (555) 123-4567. We're available Monday-Friday, 8 AM to 6 PM. You can also use the quick help buttons below for common questions!";
+    }
+    
+    // Greetings
+    if (msg.includes('hello') || msg.includes('hi') || msg.includes('hey')) {
+      return "Hello! I'm here to help you with your child's enrollment process. What questions do you have about applications, documents, or finding schools?";
+    }
+    
+    // Thank you
+    if (msg.includes('thank') || msg.includes('thanks')) {
+      return "You're welcome! I'm here whenever you need help with the enrollment process. Feel free to ask me anything about applications, documents, or school information.";
+    }
+    
+    // Default response for unrecognized questions
+    return "I'd be happy to help you with that! I can assist with questions about starting applications, uploading documents, finding available school places, checking application status, and general enrollment information. Could you please be more specific about what you'd like to know?";
+  };
+
   const handleQuickHelp = (action: string) => {
     let botResponse = '';
     
@@ -73,11 +141,12 @@ const ParentChatbot = () => {
     setMessages(prev => [...prev, userMessage]);
     setMessage('');
 
-    // Simple bot response (in a real app, this would connect to an AI service)
+    // Generate intelligent bot response
     setTimeout(() => {
+      const botResponseText = generateBotResponse(userMessage.text);
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
-        text: "Thank you for your question! For detailed assistance, please contact our support team at support@admitai.pro or call (555) 123-4567. We're here to help make your enrollment process smooth and easy!",
+        text: botResponseText,
         sender: 'bot',
         timestamp: new Date()
       };
