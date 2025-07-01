@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { useSchoolAdmin, useSchoolApplications } from '@/hooks/useSchoolAdmin';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { School, Users, FileText, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { School, Users, FileText, Clock, CheckCircle, XCircle, Crown } from 'lucide-react';
 import ApplicationsTable from '@/components/admin/ApplicationsTable';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminStats from '@/components/admin/AdminStats';
@@ -14,7 +15,8 @@ const SchoolAdminDashboard = () => {
   const { data: adminData, isLoading: adminLoading } = useSchoolAdmin();
   const { data: applications, isLoading: applicationsLoading } = useSchoolApplications();
 
-  // Mock admin access for development
+  // Check if this is the super admin
+  const isSuperAdmin = user?.email === 'chitwamakupe15@gmail.com';
   const isMockAdmin = user && user.email; // Any logged-in user can be admin in development
 
   if (adminLoading) {
@@ -47,7 +49,7 @@ const SchoolAdminDashboard = () => {
     );
   }
 
-  if (!adminData && !isMockAdmin) {
+  if (!adminData && !isMockAdmin && !isSuperAdmin) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Card className="w-full max-w-md">
@@ -67,10 +69,10 @@ const SchoolAdminDashboard = () => {
   }
 
   const mockSchoolData = {
-    name: 'Demo Elementary School',
-    school_type: 'Elementary',
-    town: 'Demo City',
-    province: 'CA'
+    name: isSuperAdmin ? 'Super Admin Dashboard - All Zambian Schools' : 'Demo Elementary School',
+    school_type: isSuperAdmin ? 'Super Admin' : 'Elementary',
+    town: isSuperAdmin ? 'All Provinces' : 'Demo City',
+    province: 'Zambia'
   };
 
   const schoolData = adminData?.schools || mockSchoolData;
@@ -79,19 +81,34 @@ const SchoolAdminDashboard = () => {
     <div className="min-h-screen bg-gray-50">
       <AdminHeader 
         schoolName={schoolData.name} 
-        adminName={user?.email || 'Admin'}
+        adminName={isSuperAdmin ? 'Super Administrator' : user?.email || 'Admin'}
         onSignOut={signOut}
       />
       
       <main className="p-6 space-y-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              {schoolData.name} - Admin Dashboard
-            </h1>
-            <p className="text-gray-600">
-              {schoolData.school_type} School • {schoolData.town}, {schoolData.province}
-            </p>
+          <div className="flex items-center space-x-3">
+            {isSuperAdmin && (
+              <div className="bg-gradient-to-r from-yellow-400 to-orange-500 p-2 rounded-xl">
+                <Crown className="h-6 w-6 text-white" />
+              </div>
+            )}
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+                {schoolData.name}
+                {isSuperAdmin && (
+                  <Badge className="ml-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
+                    Super Admin
+                  </Badge>
+                )}
+              </h1>
+              <p className="text-gray-600">
+                {isSuperAdmin ? 
+                  'Complete oversight of all school applications across Zambia' :
+                  `${schoolData.school_type} School • ${schoolData.town}, ${schoolData.province}`
+                }
+              </p>
+            </div>
           </div>
         </div>
 
@@ -101,8 +118,13 @@ const SchoolAdminDashboard = () => {
           <CardHeader>
             <CardTitle className="flex items-center">
               <FileText className="h-5 w-5 mr-2" />
-              Recent Applications
+              {isSuperAdmin ? 'All School Applications' : 'Recent Applications'}
             </CardTitle>
+            {isSuperAdmin && (
+              <p className="text-sm text-gray-600">
+                Viewing applications from all schools across Zambia
+              </p>
+            )}
           </CardHeader>
           <CardContent>
             {applicationsLoading ? (

@@ -3,10 +3,11 @@ import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Eye, Edit, FileText } from 'lucide-react';
+import { Eye, Edit, FileText, School } from 'lucide-react';
 import type { Application } from '@/types/database';
 import { format } from 'date-fns';
 import ApplicationDetailsModal from './ApplicationDetailsModal';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ApplicationsTableProps {
   applications: Application[];
@@ -14,6 +15,8 @@ interface ApplicationsTableProps {
 
 const ApplicationsTable: React.FC<ApplicationsTableProps> = ({ applications }) => {
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
+  const { user } = useAuth();
+  const isSuperAdmin = user?.email === 'chitwamakupe15@gmail.com';
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -34,7 +37,10 @@ const ApplicationsTable: React.FC<ApplicationsTableProps> = ({ applications }) =
         <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
         <h3 className="text-lg font-medium text-gray-900 mb-2">No Applications Yet</h3>
         <p className="text-gray-500">
-          Applications for your school will appear here once parents start applying.
+          {isSuperAdmin ? 
+            'No applications have been submitted to any schools yet.' :
+            'Applications for your school will appear here once parents start applying.'
+          }
         </p>
       </div>
     );
@@ -47,6 +53,9 @@ const ApplicationsTable: React.FC<ApplicationsTableProps> = ({ applications }) =
           <thead>
             <tr className="border-b border-gray-200">
               <th className="text-left py-3 px-4 font-medium text-gray-900">Student</th>
+              {isSuperAdmin && (
+                <th className="text-left py-3 px-4 font-medium text-gray-900">School</th>
+              )}
               <th className="text-left py-3 px-4 font-medium text-gray-900">Grade</th>
               <th className="text-left py-3 px-4 font-medium text-gray-900">Applied Date</th>
               <th className="text-left py-3 px-4 font-medium text-gray-900">Status</th>
@@ -67,6 +76,21 @@ const ApplicationsTable: React.FC<ApplicationsTableProps> = ({ applications }) =
                     </p>
                   </div>
                 </td>
+                {isSuperAdmin && (
+                  <td className="py-3 px-4">
+                    <div className="flex items-center space-x-2">
+                      <School className="h-4 w-4 text-blue-500" />
+                      <div>
+                        <p className="font-medium text-gray-900 text-sm">
+                          {application.schools?.name || 'Unknown School'}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {application.schools?.town}, {application.schools?.province}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+                )}
                 <td className="py-3 px-4 text-sm text-gray-900">
                   {application.students?.grade}
                 </td>

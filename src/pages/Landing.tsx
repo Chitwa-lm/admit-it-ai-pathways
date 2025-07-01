@@ -1,261 +1,190 @@
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Link } from "react-router-dom";
-import { 
-  Users, 
-  FileText, 
-  Clock, 
-  CheckCircle, 
-  Star, 
-  ArrowRight,
-  School,
-  Shield,
-  Zap,
-  BookOpen,
-  GraduationCap,
-  Clipboard,
-  Award,
-  Target,
-  TrendingUp,
-  Sparkles,
-  Play
-} from "lucide-react";
-import AboutSection from "@/components/AboutSection";
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Link } from 'react-router-dom';
+import { School, Users, FileText, CheckCircle, Globe, Heart, BookOpen, Award } from 'lucide-react';
+import { useSchools } from '@/hooks/useSchools';
+import SchoolImageGallery from '@/components/SchoolImageGallery';
 
 const Landing = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50">
-      {/* Hero Section */}
-      <section className="relative py-24 px-6 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/3 via-indigo-600/3 to-purple-600/3"></div>
-        {/* Animated background elements */}
-        <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-gradient-to-br from-indigo-400/10 to-pink-400/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center relative">
-          <div className="space-y-10 animate-fade-in">
-            <div className="space-y-8">
-              <div className="inline-flex items-center space-x-3 bg-white/90 backdrop-blur-md px-6 py-3 rounded-full shadow-xl border border-slate-200/50 hover:shadow-2xl transition-all duration-300">
-                <Award className="h-5 w-5 text-blue-600" />
-                <span className="text-sm font-semibold text-slate-800">Trusted by 500+ Schools Worldwide</span>
-                <Sparkles className="h-4 w-4 text-yellow-500" />
-              </div>
-              
-              <h1 className="text-6xl lg:text-7xl xl:text-8xl font-bold text-slate-900 leading-[0.9] tracking-tight">
-                Smart School
-                <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent block">
-                  Admissions
-                </span>
-                <span className="text-3xl lg:text-4xl xl:text-5xl text-slate-600 font-medium block mt-4">
-                  Powered by AI
-                </span>
-              </h1>
-              <p className="text-xl lg:text-2xl text-slate-700 leading-relaxed max-w-2xl font-light">
-                Transform your K-12 enrollment process with cutting-edge artificial intelligence, 
-                streamlined workflows, and crystal-clear parent communication.
-              </p>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row gap-6">
-              <Link to="/parent-login">
-                <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg px-12 py-8 shadow-2xl rounded-2xl font-semibold group transition-all duration-300 hover:scale-105">
-                  Start Free Trial 
-                  <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
-              <Button variant="outline" size="lg" className="w-full sm:w-auto text-lg px-12 py-8 border-2 border-slate-300 hover:bg-slate-100 hover:border-slate-400 rounded-2xl font-semibold group transition-all duration-300">
-                <Play className="mr-3 h-5 w-5 group-hover:scale-110 transition-transform" />
-                Watch Demo
-              </Button>
-            </div>
+  const { data: schools, isLoading } = useSchools();
 
-            {/* Enhanced Trust Indicators */}
-            <div className="grid grid-cols-3 gap-8 pt-12">
-              <div className="text-center group">
-                <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">500+</div>
-                <div className="text-sm font-semibold text-slate-600 mt-1">Schools</div>
+  const features = [
+    {
+      icon: School,
+      title: 'Quality Zambian Schools',
+      description: 'Access to premier educational institutions across all provinces of Zambia',
+      color: 'from-blue-500 to-indigo-600'
+    },
+    {
+      icon: FileText,
+      title: 'Simple Application Process',
+      description: 'Streamlined enrollment process designed for Zambian families',
+      color: 'from-green-500 to-emerald-600'
+    },
+    {
+      icon: CheckCircle,
+      title: 'Real-time Updates',
+      description: 'Track your application status and receive instant notifications',
+      color: 'from-purple-500 to-pink-600'
+    },
+    {
+      icon: Heart,
+      title: 'Family-Centered Approach',
+      description: 'Supporting Zambian families in finding the perfect educational fit',
+      color: 'from-orange-500 to-red-600'
+    },
+  ];
+
+  const stats = [
+    { number: '50+', label: 'Partner Schools', subtext: 'Across Zambia' },
+    { number: '15K+', label: 'Students Enrolled', subtext: 'Success Stories' },
+    { number: '98%', label: 'Satisfaction Rate', subtext: 'Happy Families' },
+    { number: '10', label: 'Provinces Covered', subtext: 'Nationwide Access' },
+  ];
+
+  return (
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="relative bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 px-6 py-24">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1497486751825-1233686d5d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center opacity-5"></div>
+        <div className="relative max-w-6xl mx-auto text-center">
+          <div className="flex justify-center mb-8">
+            <div className="relative">
+              <div className="bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-white w-20 h-20 rounded-3xl flex items-center justify-center shadow-2xl">
+                <School className="h-10 w-10" />
               </div>
-              <div className="text-center group">
-                <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">50K+</div>
-                <div className="text-sm font-semibold text-slate-600 mt-1">Students</div>
-              </div>
-              <div className="text-center group">
-                <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">98%</div>
-                <div className="text-sm font-semibold text-slate-600 mt-1">Satisfaction</div>
+              <div className="absolute -top-2 -right-2 bg-gradient-to-r from-orange-400 to-red-400 w-6 h-6 rounded-full shadow-lg flex items-center justify-center">
+                <Globe className="h-3 w-3 text-white" />
               </div>
             </div>
           </div>
           
-          <div className="relative animate-slide-in-up">
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-white/20">
-              <img 
-                src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=700&h=500&fit=crop&crop=center"
-                alt="Students collaborating in modern classroom"
-                className="w-full h-auto"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
-            </div>
-            
-            {/* Enhanced Floating Success Card */}
-            <Card className="absolute -bottom-8 -left-8 bg-white/95 backdrop-blur-xl shadow-2xl border-0 max-w-sm hover:shadow-3xl transition-all duration-300 hover:-translate-y-2">
-              <CardContent className="p-8">
-                <div className="flex items-center space-x-4">
-                  <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-2xl shadow-xl">
-                    <CheckCircle className="h-7 w-7 text-white" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-slate-900 text-lg">Application Approved!</p>
-                    <p className="text-sm text-slate-600 font-medium">Welcome to Lincoln Elementary</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          <h1 className="text-5xl md:text-7xl font-bold mb-8 bg-gradient-to-r from-slate-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent leading-tight">
+            Your Child's Future Starts Here
+          </h1>
+          
+          <p className="text-xl md:text-2xl text-slate-600 mb-12 max-w-4xl mx-auto leading-relaxed">
+            Connecting Zambian families with exceptional educational opportunities. 
+            From Lusaka to Livingstone, find the perfect school for your child's journey.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+            <Link to="/parent-login">
+              <Button size="lg" className="text-lg px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-200">
+                <Users className="mr-2 h-5 w-5" />
+                Start Your Application
+              </Button>
+            </Link>
+            <Link to="/admin-login">
+              <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-2 hover:bg-slate-50 shadow-lg">
+                <School className="mr-2 h-5 w-5" />
+                School Portal
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
 
-            {/* Enhanced Floating Stats Card */}
-            <Card className="absolute -top-8 -right-8 bg-white/95 backdrop-blur-xl shadow-2xl border-0 hover:shadow-3xl transition-all duration-300 hover:-translate-y-2">
-              <CardContent className="p-6">
-                <div className="flex items-center space-x-4">
-                  <TrendingUp className="h-6 w-6 text-blue-600" />
-                  <div>
-                    <p className="text-lg font-bold text-slate-900">95% Faster</p>
-                    <p className="text-sm text-slate-600 font-medium">Processing Time</p>
-                  </div>
+      {/* Stats Section */}
+      <section className="py-16 bg-white">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {stats.map((stat, index) => (
+              <div key={index} className="text-center">
+                <div className="text-4xl md:text-5xl font-bold text-blue-600 mb-2">
+                  {stat.number}
                 </div>
-              </CardContent>
-            </Card>
+                <div className="text-lg font-semibold text-slate-900 mb-1">
+                  {stat.label}
+                </div>
+                <div className="text-sm text-slate-600">
+                  {stat.subtext}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-32 px-6 bg-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-white via-slate-50/50 to-white"></div>
-        <div className="max-w-7xl mx-auto relative">
-          <div className="text-center mb-24 space-y-8">
-            <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-slate-100 to-blue-100 px-6 py-3 rounded-full border border-slate-200/50">
-              <Target className="h-5 w-5 text-blue-600" />
-              <span className="text-sm font-semibold text-slate-700">Core Features</span>
-            </div>
-            <h2 className="text-5xl lg:text-6xl xl:text-7xl font-bold text-slate-900 leading-tight">
-              Everything Your School
-              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent block">
-                Needs & More
-              </span>
+      <section className="py-20 bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
+              Why Choose AdmitAI Pro?
             </h2>
-            <p className="text-xl lg:text-2xl text-slate-600 max-w-4xl mx-auto leading-relaxed font-light">
-              Comprehensive AI-powered tools designed specifically for modern K-12 admissions 
-              and enrollment management excellence
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            <Card className="group hover:shadow-2xl transition-all duration-500 border-0 shadow-xl hover:-translate-y-4 bg-gradient-to-br from-white via-blue-50/20 to-white overflow-hidden">
-              <CardContent className="p-12 text-center space-y-8 relative">
-                <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-blue-100/50 to-purple-100/50 rounded-full -translate-y-20 translate-x-20"></div>
-                <div className="bg-gradient-to-br from-blue-500 to-indigo-600 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-2xl relative z-10">
-                  <GraduationCap className="h-12 w-12 text-white" />
-                </div>
-                <div className="space-y-4 relative z-10">
-                  <h3 className="text-2xl lg:text-3xl font-bold text-slate-900">AI-Powered Processing</h3>
-                  <p className="text-slate-600 leading-relaxed text-lg">Advanced algorithms analyze applications and provide intelligent recommendations for faster, more accurate enrollment decisions</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="group hover:shadow-2xl transition-all duration-500 border-0 shadow-xl hover:-translate-y-4 bg-gradient-to-br from-white via-green-50/20 to-white overflow-hidden">
-              <CardContent className="p-12 text-center space-y-8 relative">
-                <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-green-100/50 to-emerald-100/50 rounded-full -translate-y-20 translate-x-20"></div>
-                <div className="bg-gradient-to-br from-green-500 to-emerald-600 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-2xl relative z-10">
-                  <Shield className="h-12 w-12 text-white" />
-                </div>
-                <div className="space-y-4 relative z-10">
-                  <h3 className="text-2xl lg:text-3xl font-bold text-slate-900">Enterprise Security</h3>
-                  <p className="text-slate-600 leading-relaxed text-lg">Military-grade encryption and compliance protocols ensure your sensitive data and student information remain completely protected</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="group hover:shadow-2xl transition-all duration-500 border-0 shadow-xl hover:-translate-y-4 bg-gradient-to-br from-white via-purple-50/20 to-white overflow-hidden">
-              <CardContent className="p-12 text-center space-y-8 relative">
-                <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-purple-100/50 to-violet-100/50 rounded-full -translate-y-20 translate-x-20"></div>
-                <div className="bg-gradient-to-br from-purple-500 to-violet-600 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-2xl relative z-10">
-                  <Zap className="h-12 w-12 text-white" />
-                </div>
-                <div className="space-y-4 relative z-10">
-                  <h3 className="text-2xl lg:text-3xl font-bold text-slate-900">Lightning Fast</h3>
-                  <p className="text-slate-600 leading-relaxed text-lg">Real-time processing and instant notifications keep parents, students, and administrators perfectly synchronized throughout the process</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* About Section */}
-      <AboutSection />
-
-      {/* Enhanced CTA Section */}
-      <section className="py-32 px-6 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10"></div>
-        <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-blue-400/5 to-purple-400/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-br from-indigo-400/5 to-pink-400/5 rounded-full blur-3xl"></div>
-        
-        <div className="max-w-6xl mx-auto text-center space-y-12 relative">
-          <div className="space-y-8">
-            <h2 className="text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight">
-              Ready to Transform Your
-              <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent block mt-2">
-                School's Future?
-              </span>
-            </h2>
-            <p className="text-xl lg:text-2xl text-blue-100 max-w-4xl mx-auto leading-relaxed font-light">
-              Join hundreds of forward-thinking schools already using AdmitAI Pro to create exceptional 
-              enrollment experiences for families and educational staff.
+            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+              Designed specifically for Zambian families, our platform makes school enrollment simple, transparent, and stress-free.
             </p>
           </div>
           
-          <div className="flex flex-col sm:flex-row gap-8 justify-center pt-8">
-            <Link to="/parent-login">
-              <Button size="lg" className="w-full sm:w-auto text-lg px-12 py-8 bg-white text-slate-900 hover:bg-slate-100 font-bold shadow-2xl rounded-2xl group transition-all duration-300 hover:scale-105">
-                Start Free Trial
-                <Sparkles className="ml-3 h-5 w-5 group-hover:rotate-12 transition-transform" />
-              </Button>
-            </Link>
-            <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg px-12 py-8 text-white border-2 border-white/40 hover:bg-white/10 hover:border-white/60 font-semibold rounded-2xl backdrop-blur-sm transition-all duration-300">
-              Schedule Demo
-            </Button>
+          <div className="grid md:grid-cols-2 gap-8">
+            {features.map((feature, index) => (
+              <Card key={index} className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg hover:-translate-y-2">
+                <CardHeader className="pb-4">
+                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-xl`}>
+                    <feature.icon className="h-8 w-8 text-white" />
+                  </div>
+                  <CardTitle className="text-2xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                    {feature.title}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-lg text-slate-600 leading-relaxed">
+                    {feature.description}
+                  </CardDescription>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Enhanced Footer */}
-      <footer className="bg-slate-900 text-white py-24 px-6 border-t border-slate-800">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center space-y-10">
-            <div className="flex items-center justify-center space-x-5">
-              <div className="bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-white w-16 h-16 rounded-3xl flex items-center justify-center shadow-2xl">
-                <School className="h-8 w-8" />
-              </div>
-              <div className="text-left">
-                <h3 className="text-4xl font-bold">AdmitAI Pro</h3>
-                <p className="text-slate-400 text-lg font-medium">Smart K-12 Enrollment Platform</p>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <p className="text-slate-400 max-w-3xl mx-auto leading-relaxed text-lg">
-                © 2024 AdmitAI Pro. All rights reserved. Empowering schools and families 
-                through intelligent enrollment technology and exceptional user experiences.
-              </p>
-              <div className="flex items-center justify-center space-x-2 text-sm text-slate-500">
-                <span>Made with</span>
-                <span className="text-red-400">♥</span>
-                <span>for education</span>
-              </div>
-            </div>
+      {/* Schools Showcase */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
+              Featured Schools Across Zambia
+            </h2>
+            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+              Discover exceptional educational institutions from Lusaka to rural communities, 
+              each committed to excellence in Zambian education.
+            </p>
           </div>
+          
+          {isLoading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-slate-600">Loading schools...</p>
+            </div>
+          ) : (
+            <SchoolImageGallery schools={schools || []} />
+          )}
         </div>
-      </footer>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1497486751825-1233686d5d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center opacity-10"></div>
+        <div className="relative max-w-4xl mx-auto text-center px-6">
+          <h2 className="text-4xl md:text-5xl font-bold mb-8">
+            Ready to Secure Your Child's Future?
+          </h2>
+          <p className="text-xl mb-12 opacity-90 leading-relaxed">
+            Join thousands of Zambian families who have found their perfect school match. 
+            Start your journey today and give your child the education they deserve.
+          </p>
+          <Link to="/parent-login">
+            <Button size="lg" variant="secondary" className="text-lg px-8 py-4 bg-white text-blue-600 hover:bg-slate-100 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-200">
+              <BookOpen className="mr-2 h-5 w-5" />
+              Begin Application Process
+            </Button>
+          </Link>
+        </div>
+      </section>
     </div>
   );
 };

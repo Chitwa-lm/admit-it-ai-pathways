@@ -12,6 +12,24 @@ export const useSchoolAdmin = () => {
       if (!user) return null;
       
       console.log('Checking school admin status for user:', user.id);
+      
+      // Check if this is the super admin email in mock mode
+      if (user.email === 'chitwamakupe15@gmail.com') {
+        return {
+          id: 'super-admin-id',
+          user_id: user.id,
+          role: 'super_admin',
+          is_active: true,
+          schools: {
+            id: 'super-admin-school',
+            name: 'Super Admin Dashboard',
+            school_type: 'Admin',
+            town: 'All Locations',
+            province: 'Zambia'
+          }
+        };
+      }
+      
       const { data: adminData, error } = await supabase
         .from('school_admins')
         .select(`
@@ -48,7 +66,11 @@ export const useSchoolApplications = () => {
       if (!user) return [];
       
       console.log('Fetching applications for school admin:', user.id);
-      const { data, error } = await supabase
+      
+      // If super admin, fetch all applications
+      const isSuperAdmin = user.email === 'chitwamakupe15@gmail.com';
+      
+      let query = supabase
         .from('applications')
         .select(`
           *,
@@ -65,9 +87,25 @@ export const useSchoolApplications = () => {
             grade,
             application_deadline,
             academic_year
+          ),
+          schools (
+            id,
+            name,
+            school_type,
+            town,
+            province
           )
         `)
         .order('submitted_date', { ascending: false });
+
+      // If not super admin, filter by school
+      if (!isSuperAdmin) {
+        // For regular school admins, we would filter by their school
+        // For now in mock mode, return empty array for non-super admins
+        return [];
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error('Error fetching school applications:', error);

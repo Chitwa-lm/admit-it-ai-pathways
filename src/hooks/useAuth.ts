@@ -64,16 +64,19 @@ export const useAuth = () => {
   };
 
   const mockSignIn = async (email: string, password: string) => {
+    // Check if this is the super admin email
+    const isSuperAdmin = email === 'chitwamakupe15@gmail.com';
+    
     // Mock authentication for development - create a properly typed mock user
     const mockUser = {
-      id: 'mock-user-id',
+      id: isSuperAdmin ? 'c7a6b1e4-2d8f-4c3a-9b5e-1f2a3c4d5e6f' : 'mock-user-id',
       email: email,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       app_metadata: {},
       user_metadata: {
-        first_name: 'Mock',
-        last_name: 'User'
+        first_name: isSuperAdmin ? 'Super' : 'Mock',
+        last_name: isSuperAdmin ? 'Admin' : 'User'
       },
       aud: 'authenticated',
       role: 'authenticated',
