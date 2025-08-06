@@ -13,6 +13,19 @@ export interface DocumentVerification {
   extractedData: Record<string, any>;
   issues: string[];
   confidence: number;
+  grammarErrors: Array<{
+    text: string;
+    suggestion: string;
+    position: number;
+    severity: 'low' | 'medium' | 'high';
+    type: string;
+  }>;
+  missingFields: Array<{
+    field: string;
+    description: string;
+    required: boolean;
+  }>;
+  overallScore: number;
 }
 
 export interface PredictiveText {
@@ -224,45 +237,96 @@ class NLPService {
     return suggestions;
   }
 
-  async verifyDocument(file: File): Promise<DocumentVerification> {
-    // Simulate document processing delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+  async verifyDocument(file: File, documentText?: string): Promise<DocumentVerification> {
+    try {
+      // First, try to extract text from document if not provided
+      let text = documentText || '';
+      
+      if (!text && file.type === 'application/pdf') {
+        // For demo purposes, simulate text extraction
+        text = `Sample extracted text from ${file.name}. Student name: John Doe. Parent: Jane Doe. Address: 123 Main Street.`;
+      } else if (!text && file.type.startsWith('image/')) {
+        // For demo purposes, simulate OCR
+        text = `Sample OCR text from ${file.name}. Document appears to be a birth certificate.`;
+      }
 
-    const result: DocumentVerification = {
-      isValid: true,
-      documentType: this.detectDocumentType(file.name),
-      extractedData: {},
-      issues: [],
-      confidence: 0.85
+      const documentType = this.detectDocumentType(file.name);
+      const requiredFields = this.getRequiredFieldsForDocumentType(documentType);
+
+      // Call our NLP validation edge function
+      const response = await supabase.functions.invoke('validate-document', {
+        body: {
+          text,
+          documentType,
+          requiredFields
+        }
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+
+      const validationResult = response.data;
+
+      const result: DocumentVerification = {
+        isValid: validationResult.overallScore >= 70,
+        documentType,
+        extractedData: validationResult.extractedData || {},
+        issues: [],
+        confidence: validationResult.confidence / 100,
+        grammarErrors: validationResult.grammarErrors || [],
+        missingFields: validationResult.missingFields || [],
+        overallScore: validationResult.overallScore || 0
+      };
+
+      // Convert grammar errors to issues
+      result.grammarErrors.forEach(error => {
+        result.issues.push(`Grammar: "${error.text}" → "${error.suggestion}"`);
+      });
+
+      // Convert missing fields to issues
+      result.missingFields.forEach(field => {
+        if (field.required) {
+          result.issues.push(`Missing required field: ${field.description}`);
+        }
+      });
+
+      // Add file-specific validations
+      if (file.size > 5 * 1024 * 1024) {
+        result.issues.push('File size is large (>5MB). Consider compressing the document.');
+      }
+
+      if (file.size < 50 * 1024) {
+        result.issues.push('File size seems small. Please ensure the document is complete.');
+        result.confidence = Math.max(0, result.confidence - 0.2);
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Document verification error:', error);
+      return {
+        isValid: false,
+        documentType: this.detectDocumentType(file.name),
+        extractedData: {},
+        issues: [`Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`],
+        confidence: 0,
+        grammarErrors: [],
+        missingFields: [],
+        overallScore: 0
+      };
+    }
+  }
+
+  private getRequiredFieldsForDocumentType(documentType: string): string[] {
+    const fieldMap: Record<string, string[]> = {
+      'Birth Certificate': ['studentName', 'dateOfBirth', 'parentName'],
+      'Academic Transcript': ['studentName', 'schoolName', 'grades', 'dateIssued'],
+      'Immunization Records': ['studentName', 'dateOfBirth', 'vaccinations', 'doctorName'],
+      'Proof of Residence': ['parentName', 'address', 'dateIssued'],
+      'Medical Records': ['studentName', 'dateOfBirth', 'medicalInfo', 'doctorName']
     };
-
-    // Simulate document analysis based on file type and name
-    if (file.type === 'application/pdf') {
-      result.confidence = 0.9;
-      result.extractedData = {
-        fileSize: file.size,
-        pages: Math.ceil(file.size / 50000), // Rough estimate
-        text: 'Document text extracted successfully'
-      };
-    } else if (file.type.startsWith('image/')) {
-      result.confidence = 0.8;
-      result.extractedData = {
-        imageFormat: file.type.split('/')[1],
-        resolution: 'High quality detected'
-      };
-    }
-
-    // Add some validation checks
-    if (file.size > 5 * 1024 * 1024) {
-      result.issues.push('File size is large (>5MB). Consider compressing the document.');
-    }
-
-    if (file.size < 50 * 1024) {
-      result.issues.push('File size seems small. Please ensure the document is complete.');
-      result.confidence -= 0.2;
-    }
-
-    return result;
+    
+    return fieldMap[documentType] || ['studentName', 'dateOfBirth'];
   }
 
   async getPredictiveText(currentText: string, field: string): Promise<PredictiveText> {

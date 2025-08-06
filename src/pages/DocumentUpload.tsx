@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Upload, FileText, Check, X, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import DocumentVerifier from "@/components/DocumentVerifier";
+import DocumentValidator from "@/components/DocumentValidator";
 import type { DocumentVerification } from "@/services/nlpService";
 
 interface Document {
@@ -306,11 +306,10 @@ const DocumentUpload = () => {
                       id={`replace-${doc.id}`}
                     />
 
-                    {/* AI Document Verification */}
+                    {/* AI Document Validation */}
                     {doc.file && (
-                      <DocumentVerifier
-                        file={doc.file}
-                        onVerificationComplete={(verification) => 
+                      <DocumentValidator
+                        onValidationComplete={(verification) => 
                           handleVerificationComplete(doc.id, verification)
                         }
                       />
