@@ -1,12 +1,17 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import type { Application } from '@/types/database';
 import { format } from 'date-fns';
 import { User, Calendar, School, FileText, Star } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { Constants } from '@/integrations/supabase/types';
 
 interface ApplicationDetailsModalProps {
   application: Application;
@@ -19,6 +24,10 @@ const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = ({
   isOpen,
   onClose,
 }) => {
+  const [selectedStatus, setSelectedStatus] = useState<string>(application.status);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const { toast } = useToast();
+
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       pending: { variant: 'secondary' as const, label: 'Pending' },
@@ -30,6 +39,36 @@ const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = ({
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
     return <Badge variant={config.variant}>{config.label}</Badge>;
+  };
+
+  const handleStatusUpdate = async () => {
+    if (selectedStatus === application.status) return;
+
+    setIsUpdating(true);
+    try {
+      const { error } = await supabase
+        .from('applications')
+        .update({ status: selectedStatus as any })
+        .eq('id', application.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Status Updated",
+        description: "Application status has been updated successfully",
+      });
+      
+      onClose();
+    } catch (error) {
+      console.error('Error updating application status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update application status",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   return (
@@ -87,9 +126,37 @@ const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = ({
           {/* Application Information */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <FileText className="h-4 w-4" />
-                <span>Application Details</span>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <FileText className="h-4 w-4" />
+                  <span>Application Details</span>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm font-normal">Status:</span>
+                    <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                      <SelectTrigger className="w-auto min-w-[140px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Constants.public.Enums.application_status.map((status) => (
+                          <SelectItem key={status} value={status}>
+                            {status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ')}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {selectedStatus !== application.status && (
+                      <Button
+                        size="sm"
+                        onClick={handleStatusUpdate}
+                        disabled={isUpdating}
+                      >
+                        {isUpdating ? 'Updating...' : 'Update'}
+                      </Button>
+                    )}
+                  </div>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">

@@ -2,14 +2,17 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Eye, Edit, School as SchoolIcon, Globe, Phone, Mail, MapPin } from 'lucide-react';
+import { Eye, Edit, School as SchoolIcon, Globe, Phone, Mail, MapPin, Users } from 'lucide-react';
 import type { School } from '@/types/database';
+import { useSchoolAvailableSlots } from '@/hooks/useAvailablePlacesAdmin';
 
 interface SchoolsTableProps {
   schools: School[];
 }
 
 const SchoolsTable: React.FC<SchoolsTableProps> = ({ schools }) => {
+  const { data: schoolSlots } = useSchoolAvailableSlots();
+  
   const getSchoolTypeBadge = (type: string) => {
     const typeConfig = {
       Public: { variant: 'default' as const, label: 'Public' },
@@ -19,6 +22,10 @@ const SchoolsTable: React.FC<SchoolsTableProps> = ({ schools }) => {
 
     const config = typeConfig[type as keyof typeof typeConfig] || typeConfig.Public;
     return <Badge variant={config.variant}>{config.label}</Badge>;
+  };
+
+  const getSchoolSlots = (schoolId: string) => {
+    return schoolSlots?.find(slot => slot.school.id === schoolId);
   };
 
   if (schools.length === 0) {
@@ -41,6 +48,7 @@ const SchoolsTable: React.FC<SchoolsTableProps> = ({ schools }) => {
             <th className="text-left py-3 px-4 font-medium text-gray-900">School</th>
             <th className="text-left py-3 px-4 font-medium text-gray-900">Type</th>
             <th className="text-left py-3 px-4 font-medium text-gray-900">Location</th>
+            <th className="text-left py-3 px-4 font-medium text-gray-900">Available Slots</th>
             <th className="text-left py-3 px-4 font-medium text-gray-900">Contact</th>
             <th className="text-right py-3 px-4 font-medium text-gray-900">Actions</th>
           </tr>
@@ -87,6 +95,35 @@ const SchoolsTable: React.FC<SchoolsTableProps> = ({ schools }) => {
                     </p>
                   )}
                 </div>
+              </td>
+              <td className="py-3 px-4">
+                {(() => {
+                  const slots = getSchoolSlots(school.id);
+                  if (!slots) {
+                    return (
+                      <div className="text-sm text-gray-500">
+                        No places configured
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="space-y-1">
+                      <div className="flex items-center text-sm">
+                        <Users className="h-3 w-3 text-blue-500 mr-1" />
+                        <span className="font-medium text-green-600">
+                          {slots.totalAvailable}
+                        </span>
+                        <span className="text-gray-500 mx-1">/</span>
+                        <span className="text-gray-900">
+                          {slots.totalCapacity}
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {slots.grades.length} grade level{slots.grades.length !== 1 ? 's' : ''}
+                      </div>
+                    </div>
+                  );
+                })()}
               </td>
               <td className="py-3 px-4">
                 <div className="space-y-1">

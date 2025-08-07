@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { School, Users, FileText, Clock, CheckCircle, XCircle, Crown, Database, Plus } from 'lucide-react';
 import ApplicationsTable from '@/components/admin/ApplicationsTable';
 import SchoolsTable from '@/components/admin/SchoolsTable';
+import AvailablePlacesTable from '@/components/admin/AvailablePlacesTable';
 import AddSchoolModal from '@/components/admin/AddSchoolModal';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminStats from '@/components/admin/AdminStats';
@@ -141,9 +142,10 @@ const SchoolAdminDashboard = () => {
         <AdminStats applications={applications || []} />
 
         <Tabs defaultValue="applications" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="applications">Applications</TabsTrigger>
             <TabsTrigger value="schools">Schools</TabsTrigger>
+            <TabsTrigger value="available-places">Available Places</TabsTrigger>
           </TabsList>
 
           <TabsContent value="applications">
@@ -207,6 +209,23 @@ const SchoolAdminDashboard = () => {
                 ) : (
                   <SchoolsTable schools={schools || []} />
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="available-places">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Users className="h-5 w-5 mr-2" />
+                  Available Places
+                </CardTitle>
+                <p className="text-sm text-gray-600">
+                  Manage enrollment capacity and deadlines for all grade levels
+                </p>
+              </CardHeader>
+              <CardContent>
+                <AvailablePlacesTable />
               </CardContent>
             </Card>
           </TabsContent>
