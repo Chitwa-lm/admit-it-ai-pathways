@@ -309,6 +309,7 @@ const DocumentUpload = () => {
                     {/* AI Document Validation */}
                     {doc.file && (
                       <DocumentValidator
+                        file={doc.file}
                         onValidationComplete={(verification) => 
                           handleVerificationComplete(doc.id, verification)
                         }

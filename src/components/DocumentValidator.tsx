@@ -18,13 +18,22 @@ import { useToast } from "@/hooks/use-toast";
 
 interface DocumentValidatorProps {
   onValidationComplete?: (result: DocumentVerification) => void;
+  file?: File | null;
 }
 
-const DocumentValidator: React.FC<DocumentValidatorProps> = ({ onValidationComplete }) => {
-  const [file, setFile] = useState<File | null>(null);
+const DocumentValidator: React.FC<DocumentValidatorProps> = ({ onValidationComplete, file: propFile }) => {
+  const [file, setFile] = useState<File | null>(propFile || null);
   const [isValidating, setIsValidating] = useState(false);
   const [validationResult, setValidationResult] = useState<DocumentVerification | null>(null);
   const { toast } = useToast();
+
+  // Update internal file state when prop changes
+  React.useEffect(() => {
+    if (propFile && propFile !== file) {
+      setFile(propFile);
+      setValidationResult(null);
+    }
+  }, [propFile, file]);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -84,32 +93,67 @@ const DocumentValidator: React.FC<DocumentValidatorProps> = ({ onValidationCompl
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* File Upload */}
-        <div className="space-y-4">
-          <div className="flex items-center space-x-4">
-            <div className="flex-1">
-              <input
-                type="file"
-                onChange={handleFileSelect}
-                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                className="hidden"
-                id="document-upload"
-              />
-              <label
-                htmlFor="document-upload"
-                className="flex items-center justify-center w-full h-12 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary transition-colors"
-              >
-                <div className="flex items-center space-x-2 text-gray-600">
-                  <Upload className="h-4 w-4" />
-                  <span>{file ? file.name : 'Select document to validate'}</span>
-                </div>
-              </label>
+        {/* File Upload or Validation */}
+        {!propFile ? (
+          <div className="space-y-4">
+            <div className="flex items-center space-x-4">
+              <div className="flex-1">
+                <input
+                  type="file"
+                  onChange={handleFileSelect}
+                  accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                  className="hidden"
+                  id="document-upload"
+                />
+                <label
+                  htmlFor="document-upload"
+                  className="flex items-center justify-center w-full h-12 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary transition-colors"
+                >
+                  <div className="flex items-center space-x-2 text-gray-600">
+                    <Upload className="h-4 w-4" />
+                    <span>{file ? file.name : 'Select document to validate'}</span>
+                  </div>
+                </label>
+              </div>
+              {file && (
+                <Button 
+                  onClick={handleValidate} 
+                  disabled={isValidating}
+                  className="min-w-[120px]"
+                >
+                  {isValidating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Validating
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="h-4 w-4 mr-2" />
+                      Validate
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
-            {file && (
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center space-x-3">
+                <FileText className="h-5 w-5 text-blue-600" />
+                <div>
+                  <p className="text-sm font-medium text-blue-800">
+                    {file?.name}
+                  </p>
+                  <p className="text-xs text-blue-600">
+                    Ready for validation
+                  </p>
+                </div>
+              </div>
               <Button 
                 onClick={handleValidate} 
                 disabled={isValidating}
-                className="min-w-[120px]"
+                size="sm"
               >
                 {isValidating ? (
                   <>
@@ -118,14 +162,14 @@ const DocumentValidator: React.FC<DocumentValidatorProps> = ({ onValidationCompl
                   </>
                 ) : (
                   <>
-                    <FileText className="h-4 w-4 mr-2" />
+                    <Brain className="h-4 w-4 mr-2" />
                     Validate
                   </>
                 )}
               </Button>
-            )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Validation Results */}
         {validationResult && (
