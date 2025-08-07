@@ -1,12 +1,16 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSchoolAdmin, useSchoolApplications } from '@/hooks/useSchoolAdmin';
+import { useSchools } from '@/hooks/useSchools';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { School, Users, FileText, Clock, CheckCircle, XCircle, Crown, Database } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { School, Users, FileText, Clock, CheckCircle, XCircle, Crown, Database, Plus } from 'lucide-react';
 import ApplicationsTable from '@/components/admin/ApplicationsTable';
+import SchoolsTable from '@/components/admin/SchoolsTable';
+import AddSchoolModal from '@/components/admin/AddSchoolModal';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminStats from '@/components/admin/AdminStats';
 import { createSampleData } from '@/utils/sampleData';
@@ -15,6 +19,8 @@ const SchoolAdminDashboard = () => {
   const { user, signOut } = useAuth();
   const { data: adminData, isLoading: adminLoading } = useSchoolAdmin();
   const { data: applications, isLoading: applicationsLoading, refetch } = useSchoolApplications();
+  const { data: schools, isLoading: schoolsLoading, refetch: refetchSchools } = useSchools();
+  const [showAddSchoolModal, setShowAddSchoolModal] = useState(false);
 
   // Check if this is the super admin
   const isSuperAdmin = user?.email === 'chitwamakupe15@gmail.com';
@@ -134,30 +140,87 @@ const SchoolAdminDashboard = () => {
 
         <AdminStats applications={applications || []} />
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <FileText className="h-5 w-5 mr-2" />
-              {isSuperAdmin ? 'All School Applications' : 'Recent Applications'}
-            </CardTitle>
-            {isSuperAdmin && (
-              <p className="text-sm text-gray-600">
-                Viewing applications from all schools across Zambia
-              </p>
-            )}
-          </CardHeader>
-          <CardContent>
-            {applicationsLoading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading applications...</p>
-              </div>
-            ) : (
-              <ApplicationsTable applications={applications || []} />
-            )}
-          </CardContent>
-        </Card>
+        <Tabs defaultValue="applications" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="applications">Applications</TabsTrigger>
+            <TabsTrigger value="schools">Schools</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="applications">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <FileText className="h-5 w-5 mr-2" />
+                  {isSuperAdmin ? 'All School Applications' : 'Recent Applications'}
+                </CardTitle>
+                {isSuperAdmin && (
+                  <p className="text-sm text-gray-600">
+                    Viewing applications from all schools across Zambia
+                  </p>
+                )}
+              </CardHeader>
+              <CardContent>
+                {applicationsLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading applications...</p>
+                  </div>
+                ) : (
+                  <ApplicationsTable applications={applications || []} />
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="schools">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center">
+                      <School className="h-5 w-5 mr-2" />
+                      {isSuperAdmin ? 'All Schools' : 'Schools'}
+                    </CardTitle>
+                    {isSuperAdmin && (
+                      <p className="text-sm text-gray-600">
+                        Manage all schools in the Zambian education system
+                      </p>
+                    )}
+                  </div>
+                  {isSuperAdmin && (
+                    <Button 
+                      onClick={() => setShowAddSchoolModal(true)}
+                      className="bg-gradient-to-r from-blue-600 to-purple-600"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add School
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent>
+                {schoolsLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading schools...</p>
+                  </div>
+                ) : (
+                  <SchoolsTable schools={schools || []} />
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </main>
+
+      <AddSchoolModal 
+        isOpen={showAddSchoolModal}
+        onClose={() => setShowAddSchoolModal(false)}
+        onSchoolAdded={() => {
+          refetchSchools();
+          setShowAddSchoolModal(false);
+        }}
+      />
     </div>
   );
 };
