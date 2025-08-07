@@ -27,6 +27,11 @@ interface ValidationResult {
     required: boolean;
   }>;
   extractedData: Record<string, any>;
+  contentValidation: {
+    isAppropriateContent: boolean;
+    contentIssues: string[];
+    legitimacyScore: number;
+  };
   confidence: number;
   overallScore: number;
 }
@@ -98,8 +103,19 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a document field extractor for ${documentType} documents. 
-            Extract relevant information and identify missing required fields.
+            content: `You are an intelligent document content validator for ${documentType} documents used in school applications. 
+            Your job is to:
+            1. Extract relevant information from the document
+            2. Verify that the document contains appropriate content for its type
+            3. Check if the document is legitimate and contains expected information
+            4. Identify missing required fields
+            
+            For example:
+            - Birth Certificate should contain: student's full name, date of birth, place of birth, parent names, official seals/signatures
+            - Academic Transcript should contain: student name, school name, grades, courses, dates, official letterhead
+            - Immunization Records should contain: student name, vaccination dates, vaccine types, doctor/clinic info
+            - Proof of Residence should contain: parent/guardian name, current address, date, official source
+            
             Return only a JSON object with this structure:
             {
               "extractedData": {
@@ -110,7 +126,12 @@ serve(async (req) => {
                 "phone": "extracted value or null",
                 "email": "extracted value or null",
                 "emergencyContact": "extracted value or null",
-                "medicalInfo": "extracted value or null"
+                "medicalInfo": "extracted value or null",
+                "schoolName": "extracted value or null",
+                "grades": "extracted value or null",
+                "vaccinations": "extracted value or null",
+                "doctorName": "extracted value or null",
+                "dateIssued": "extracted value or null"
               },
               "missingFields": [
                 {
@@ -119,12 +140,27 @@ serve(async (req) => {
                   "required": true
                 }
               ],
+              "contentValidation": {
+                "isAppropriateContent": true,
+                "contentIssues": ["list of issues if document doesn't match expected type"],
+                "legitimacyScore": 85
+              },
               "confidence": 85
             }`
           },
           {
             role: 'user',
-            content: `Extract fields from this ${documentType}: "${text}". Required fields: ${requiredFields.join(', ')}`
+            content: `Analyze this ${documentType} document and validate its content appropriateness: 
+
+"${text}"
+
+Required fields: ${requiredFields.join(', ')}
+
+Please verify:
+1. Does this document actually appear to be a ${documentType}?
+2. Does it contain the type of information expected for this document type?
+3. Are there any red flags that suggest this might be the wrong document type?
+4. Extract all relevant fields and identify what's missing.`
           }
         ],
         temperature: 0.1,
@@ -139,19 +175,31 @@ serve(async (req) => {
       extractionResult = { 
         extractedData: {}, 
         missingFields: [], 
+        contentValidation: {
+          isAppropriateContent: false,
+          contentIssues: ["Unable to parse document content"],
+          legitimacyScore: 30
+        },
         confidence: 70 
       };
     }
 
-    // Calculate overall score
+    // Calculate overall score including content validation
     const grammarScore = grammarResult.score || 85;
     const completenessScore = Math.max(0, 100 - (extractionResult.missingFields?.length || 0) * 15);
-    const overallScore = Math.round((grammarScore + completenessScore + extractionResult.confidence) / 3);
+    const contentScore = extractionResult.contentValidation?.legitimacyScore || 70;
+    const contentPenalty = extractionResult.contentValidation?.isAppropriateContent ? 0 : 30;
+    const overallScore = Math.round(Math.max(0, (grammarScore + completenessScore + contentScore + extractionResult.confidence) / 4 - contentPenalty));
 
     const result: ValidationResult = {
       grammarErrors: grammarResult.errors || [],
       missingFields: extractionResult.missingFields || [],
       extractedData: extractionResult.extractedData || {},
+      contentValidation: extractionResult.contentValidation || {
+        isAppropriateContent: true,
+        contentIssues: [],
+        legitimacyScore: 70
+      },
       confidence: extractionResult.confidence || 70,
       overallScore
     };
@@ -168,6 +216,11 @@ serve(async (req) => {
       grammarErrors: [],
       missingFields: [],
       extractedData: {},
+      contentValidation: {
+        isAppropriateContent: false,
+        contentIssues: ["Error processing document"],
+        legitimacyScore: 0
+      },
       confidence: 0,
       overallScore: 0
     }), {

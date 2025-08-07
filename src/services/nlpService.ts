@@ -25,6 +25,11 @@ export interface DocumentVerification {
     description: string;
     required: boolean;
   }>;
+  contentValidation: {
+    isAppropriateContent: boolean;
+    contentIssues: string[];
+    legitimacyScore: number;
+  };
   overallScore: number;
 }
 
@@ -269,13 +274,18 @@ class NLPService {
       const validationResult = response.data;
 
       const result: DocumentVerification = {
-        isValid: validationResult.overallScore >= 70,
+        isValid: validationResult.overallScore >= 70 && (validationResult.contentValidation?.isAppropriateContent !== false),
         documentType,
         extractedData: validationResult.extractedData || {},
         issues: [],
         confidence: validationResult.confidence / 100,
         grammarErrors: validationResult.grammarErrors || [],
         missingFields: validationResult.missingFields || [],
+        contentValidation: validationResult.contentValidation || {
+          isAppropriateContent: true,
+          contentIssues: [],
+          legitimacyScore: 70
+        },
         overallScore: validationResult.overallScore || 0
       };
 
@@ -290,6 +300,13 @@ class NLPService {
           result.issues.push(`Missing required field: ${field.description}`);
         }
       });
+
+      // Add content validation issues
+      if (!result.contentValidation.isAppropriateContent) {
+        result.contentValidation.contentIssues.forEach(issue => {
+          result.issues.push(`Content Issue: ${issue}`);
+        });
+      }
 
       // Add file-specific validations
       if (file.size > 5 * 1024 * 1024) {
@@ -312,6 +329,11 @@ class NLPService {
         confidence: 0,
         grammarErrors: [],
         missingFields: [],
+        contentValidation: {
+          isAppropriateContent: false,
+          contentIssues: ["Error processing document"],
+          legitimacyScore: 0
+        },
         overallScore: 0
       };
     }
