@@ -240,18 +240,118 @@ const DocumentValidator: React.FC<DocumentValidatorProps> = ({ onValidationCompl
                   <XCircle className="h-4 w-4 text-red-600" />
                   <span>Missing Information</span>
                 </h4>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {validationResult.missingFields.map((field, index) => (
-                    <Alert key={index} variant={field.required ? "destructive" : "default"}>
-                      <AlertDescription className="flex items-center justify-between">
-                        <span>{field.description}</span>
-                        <Badge variant={field.required ? "destructive" : "secondary"}>
-                          {field.required ? "Required" : "Optional"}
-                        </Badge>
+                    <Alert key={index} variant={field.required ? "destructive" : "default"} className="border-l-4">
+                      <AlertDescription>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium">{field.description}</span>
+                            <Badge variant={field.required ? "destructive" : "secondary"}>
+                              {field.required ? "Required" : "Optional"}
+                            </Badge>
+                          </div>
+                          {field.suggestion && (
+                            <div className="text-sm text-muted-foreground bg-muted p-2 rounded">
+                              💡 <strong>How to fix:</strong> {field.suggestion}
+                            </div>
+                          )}
+                          {field.severity && (
+                            <Badge variant={getSeverityColor(field.severity)}>
+                              {field.severity} priority
+                            </Badge>
+                          )}
+                        </div>
                       </AlertDescription>
                     </Alert>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Content Validation Issues */}
+            {validationResult.contentValidation && validationResult.contentValidation.contentIssues.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="font-medium flex items-center space-x-2">
+                  <AlertTriangle className="h-4 w-4 text-orange-600" />
+                  <span>Content Validation Issues</span>
+                </h4>
+                <div className="space-y-3">
+                  {validationResult.contentValidation.contentIssues.map((issue, index) => {
+                    if (typeof issue === 'string') {
+                      return (
+                        <Alert key={index} variant="default">
+                          <AlertDescription>{issue}</AlertDescription>
+                        </Alert>
+                      );
+                    } else {
+                      return (
+                        <Alert key={index} variant={issue.severity === 'high' ? 'destructive' : 'default'} className="border-l-4">
+                          <AlertDescription>
+                            <div className="space-y-2">
+                              <div className="font-medium">{issue.issue}</div>
+                              <div className="text-sm text-muted-foreground">
+                                <strong>Why this matters:</strong> {issue.explanation}
+                              </div>
+                              <div className="text-sm bg-muted p-2 rounded">
+                                💡 <strong>Solution:</strong> {issue.solution}
+                              </div>
+                              <Badge variant={getSeverityColor(issue.severity)}>
+                                {issue.severity} severity
+                              </Badge>
+                            </div>
+                          </AlertDescription>
+                        </Alert>
+                      );
+                    }
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Quality Issues */}
+            {validationResult.contentValidation?.qualityIssues && validationResult.contentValidation.qualityIssues.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="font-medium flex items-center space-x-2">
+                  <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                  <span>Document Quality Issues</span>
+                </h4>
+                <div className="space-y-2">
+                  {validationResult.contentValidation.qualityIssues.map((issue, index) => (
+                    <Alert key={index} variant="default">
+                      <AlertDescription className="flex items-start space-x-2">
+                        <span>📸</span>
+                        <div>
+                          <div>{issue}</div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            Tip: Try rescanning the document with better lighting and ensure it's flat and in focus.
+                          </div>
+                        </div>
+                      </AlertDescription>
+                    </Alert>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Document Type Validation */}
+            {validationResult.contentValidation?.documentTypeMatch === false && (
+              <div className="space-y-2">
+                <h4 className="font-medium flex items-center space-x-2">
+                  <XCircle className="h-4 w-4 text-red-600" />
+                  <span>Document Type Mismatch</span>
+                </h4>
+                <Alert variant="destructive">
+                  <AlertDescription>
+                    <div className="space-y-2">
+                      <div>This document doesn't appear to be a valid {validationResult.documentType}.</div>
+                      <div className="text-sm bg-red-50 p-2 rounded">
+                        💡 <strong>What to do:</strong> Please ensure you've uploaded the correct document type. 
+                        Double-check the document requirements and try uploading a different file if needed.
+                      </div>
+                    </div>
+                  </AlertDescription>
+                </Alert>
               </div>
             )}
 
@@ -277,17 +377,30 @@ const DocumentValidator: React.FC<DocumentValidatorProps> = ({ onValidationCompl
               </div>
             )}
 
-            {/* General Issues */}
+            {/* General Issues - now shows a summary of key problems */}
             {validationResult.issues && validationResult.issues.length > 0 && (
               <div className="space-y-2">
-                <h4 className="font-medium">Additional Issues</h4>
-                <div className="space-y-1">
-                  {validationResult.issues.map((issue, index) => (
-                    <Alert key={index} variant="default">
-                      <AlertDescription className="text-sm">{issue}</AlertDescription>
-                    </Alert>
-                  ))}
-                </div>
+                <h4 className="font-medium flex items-center space-x-2">
+                  <AlertTriangle className="h-4 w-4 text-blue-600" />
+                  <span>Summary of Issues Found</span>
+                </h4>
+                <Alert variant="default" className="bg-blue-50 border-blue-200">
+                  <AlertDescription>
+                    <div className="space-y-1">
+                      <div className="font-medium text-blue-800 mb-2">
+                        {validationResult.issues.length} issue{validationResult.issues.length !== 1 ? 's' : ''} detected:
+                      </div>
+                      {validationResult.issues.slice(0, 3).map((issue, index) => (
+                        <div key={index} className="text-sm text-blue-700">• {issue}</div>
+                      ))}
+                      {validationResult.issues.length > 3 && (
+                        <div className="text-xs text-blue-600 italic">
+                          ...and {validationResult.issues.length - 3} more issue{validationResult.issues.length - 3 !== 1 ? 's' : ''}
+                        </div>
+                      )}
+                    </div>
+                  </AlertDescription>
+                </Alert>
               </div>
             )}
           </div>
