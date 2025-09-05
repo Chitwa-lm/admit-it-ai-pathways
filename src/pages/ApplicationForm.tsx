@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,38 +8,31 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Save, Send, Brain } from "lucide-react";
 import SmartInput from "@/components/SmartInput";
+import ApplicationProgress from "@/components/ApplicationProgress";
 import { nlpService } from "@/services/nlpService";
 import { useToast } from "@/hooks/use-toast";
 import { useApplicationDraft } from "@/hooks/useApplicationDraft";
-import ApplicationProgress from "@/components/ApplicationProgress";
 
 const ApplicationForm = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
-  
   const {
     formData,
-    setFormData,
     progress,
-    autoSave,
-    saveDraft,
-    deleteDraft,
     isLoading,
     isSaving,
-    lastSaved,
-    getProgressPercentage,
-    getCompletedSteps,
-    getTotalSteps,
-    hasExistingDraft
+    updateFormData,
+    saveNow,
+    deleteDraft,
+    hasDraft
   } = useApplicationDraft();
+  
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Check if all required fields are completed
-    const progressPercentage = getProgressPercentage();
-    if (progressPercentage < 100) {
+    if (progress.completionPercentage < 100) {
       toast({
         title: "Application Incomplete",
         description: "Please complete all required sections before submitting.",
@@ -47,33 +40,21 @@ const ApplicationForm = () => {
       });
       return;
     }
-    
+
     console.log("Application submitted:", formData);
-    deleteDraft(); // Clean up draft after successful submission
     toast({
       title: "Application Submitted",
       description: "Your application has been submitted successfully. You'll be redirected to upload documents.",
     });
+    
+    // Delete draft after successful submission
+    deleteDraft();
     navigate("/documents");
   };
 
   const handleInputChange = (field: string, value: string | boolean) => {
-    const newFormData = { ...formData, [field]: value };
-    setFormData(newFormData);
-    autoSave(newFormData);
+    updateFormData(field, value);
   };
-
-  // Show loading state while fetching existing draft
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading your application...</p>
-        </div>
-      </div>
-    );
-  }
 
   const generateSummary = async () => {
     setIsGeneratingSummary(true);
@@ -95,6 +76,17 @@ const ApplicationForm = () => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading your application...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-3xl mx-auto">
@@ -106,11 +98,7 @@ const ApplicationForm = () => {
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Smart Application Form</h1>
-              <p className="text-gray-600">
-                {hasExistingDraft 
-                  ? "Continue where you left off - your progress is automatically saved" 
-                  : "AI-powered form with smart suggestions and validation"}
-              </p>
+              <p className="text-gray-600">AI-powered form with smart suggestions and validation</p>
             </div>
           </div>
           <Button
@@ -124,15 +112,7 @@ const ApplicationForm = () => {
           </Button>
         </div>
 
-        {/* Progress Indicator */}
-        <ApplicationProgress
-          progress={progress}
-          progressPercentage={getProgressPercentage()}
-          completedSteps={getCompletedSteps()}
-          totalSteps={getTotalSteps()}
-          lastSaved={lastSaved}
-          isSaving={isSaving}
-        />
+        <ApplicationProgress progress={progress} isSaving={isSaving} />
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Student Information */}
@@ -344,7 +324,7 @@ const ApplicationForm = () => {
               type="button" 
               variant="outline" 
               className="flex-1"
-              onClick={saveDraft}
+              onClick={saveNow}
               disabled={isSaving}
             >
               <Save className="h-4 w-4 mr-2" />
@@ -353,12 +333,20 @@ const ApplicationForm = () => {
             <Button 
               type="submit" 
               className="flex-1"
-              disabled={getProgressPercentage() < 100}
+              disabled={progress.completionPercentage < 100}
             >
               <Send className="h-4 w-4 mr-2" />
               Submit Application
             </Button>
           </div>
+          
+          {hasDraft && progress.completionPercentage < 100 && (
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-2">
+                Complete all required sections to submit your application
+              </p>
+            </div>
+          )}
         </form>
       </div>
     </div>

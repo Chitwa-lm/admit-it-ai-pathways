@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-export interface FormData {
+export interface ApplicationFormData {
   studentName: string;
   dateOfBirth: string;
   grade: string;
@@ -21,228 +20,221 @@ export interface FormData {
   additionalInfo: string;
 }
 
-export interface FormProgress {
+export interface ApplicationProgress {
   studentInfo: boolean;
   parentInfo: boolean;
   additionalInfo: boolean;
+  completionPercentage: number;
 }
 
-interface ApplicationDraft {
-  id: string;
-  user_id: string;
-  form_data: FormData;
-  progress: FormProgress;
-  last_saved_at: string;
-  created_at: string;
-  updated_at: string;
-}
+const initialFormData: ApplicationFormData = {
+  studentName: "",
+  dateOfBirth: "",
+  grade: "",
+  gender: "",
+  parentName: "",
+  parentPhone: "",
+  parentEmail: "",
+  address: "",
+  previousSchool: "",
+  specialNeeds: "",
+  hasAllergies: false,
+  allergyDetails: "",
+  emergencyContact: "",
+  emergencyPhone: "",
+  additionalInfo: ""
+};
 
 export const useApplicationDraft = () => {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  
-  const [formData, setFormData] = useState<FormData>({
-    studentName: "",
-    dateOfBirth: "",
-    grade: "",
-    gender: "",
-    parentName: "",
-    parentPhone: "",
-    parentEmail: "",
-    address: "",
-    previousSchool: "",
-    specialNeeds: "",
-    hasAllergies: false,
-    allergyDetails: "",
-    emergencyContact: "",
-    emergencyPhone: "",
-    additionalInfo: ""
-  });
-
-  const [progress, setProgress] = useState<FormProgress>({
+  const [formData, setFormData] = useState<ApplicationFormData>(initialFormData);
+  const [progress, setProgress] = useState<ApplicationProgress>({
     studentInfo: false,
     parentInfo: false,
-    additionalInfo: false
+    additionalInfo: false,
+    completionPercentage: 0
   });
-
-  // Fetch existing draft
-  const { data: existingDraft, isLoading } = useQuery({
-    queryKey: ['applicationDraft'],
-    queryFn: async (): Promise<ApplicationDraft | null> => {
-      const { data, error } = await supabase
-        .from('application_drafts')
-        .select('*')
-        .single();
-      
-      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-        throw error;
-      }
-      
-      if (!data) return null;
-      
-      // Cast the Json types to our custom types
-      return {
-        ...data,
-        form_data: data.form_data as unknown as FormData,
-        progress: data.progress as unknown as FormProgress
-      } as ApplicationDraft;
-    },
-  });
-
-  // Load existing draft data
-  useEffect(() => {
-    if (existingDraft) {
-      setFormData(existingDraft.form_data);
-      setProgress(existingDraft.progress);
-    }
-  }, [existingDraft]);
+  const [draftId, setDraftId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const { toast } = useToast();
 
   // Calculate progress based on form data
-  const calculateProgress = useCallback((data: FormData): FormProgress => {
+  const calculateProgress = useCallback((data: ApplicationFormData): ApplicationProgress => {
     const studentInfo = !!(data.studentName && data.dateOfBirth && data.grade);
     const parentInfo = !!(data.parentName && data.parentPhone && data.parentEmail && data.address);
     const additionalInfo = !!(data.emergencyContact && data.emergencyPhone);
     
-    return { studentInfo, parentInfo, additionalInfo };
+    const completedSections = [studentInfo, parentInfo, additionalInfo].filter(Boolean).length;
+    const completionPercentage = Math.round((completedSections / 3) * 100);
+
+    return {
+      studentInfo,
+      parentInfo,
+      additionalInfo,
+      completionPercentage
+    };
   }, []);
 
-  // Auto-save mutation
-  const saveDraftMutation = useMutation({
-    mutationFn: async ({ formData, progress }: { formData: FormData; progress: FormProgress }) => {
-      if (existingDraft) {
-        // Update existing draft
-        const { data, error } = await supabase
-          .from('application_drafts')
-          .update({
-            form_data: formData as any,
-            progress: progress as any,
-            last_saved_at: new Date().toISOString()
-          })
-          .eq('id', existingDraft.id)
-          .select()
-          .single();
-        
-        if (error) throw error;
-        return data;
-      } else {
-        // Create new draft
-        const { data, error } = await supabase
-          .from('application_drafts')
-          .insert({
-            form_data: formData as any,
-            progress: progress as any,
-            user_id: (await supabase.auth.getUser()).data.user?.id || ''
-          })
-          .select()
-          .single();
-        
-        if (error) throw error;
-        return data;
+  // Load existing draft
+  const loadDraft = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        setIsLoading(false);
+        return;
       }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['applicationDraft'] });
-    },
-    onError: (error) => {
-      console.error('Error saving draft:', error);
-      toast({
-        title: "Save Error",
-        description: "Failed to save draft. Your changes may be lost.",
-        variant: "destructive"
-      });
+
+      const { data, error } = await supabase
+        .from('application_drafts')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('last_saved_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error loading draft:', error);
+        setIsLoading(false);
+        return;
+      }
+
+      if (data) {
+        setDraftId(data.id);
+        setFormData(data.form_data as unknown as ApplicationFormData);
+        setProgress(data.progress as unknown as ApplicationProgress);
+        
+        if ((data.progress as any)?.completionPercentage > 0) {
+          toast({
+            title: "Draft Loaded",
+            description: `Continuing from ${(data.progress as any).completionPercentage}% completion`,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error loading draft:', error);
+    } finally {
+      setIsLoading(false);
     }
-  });
+  }, [toast]);
 
-  // Auto-save function
-  const autoSave = useCallback((newFormData: FormData) => {
-    const newProgress = calculateProgress(newFormData);
-    setProgress(newProgress);
-    
-    // Debounced save (save after 2 seconds of no changes)
-    const timeoutId = setTimeout(() => {
-      saveDraftMutation.mutate({ formData: newFormData, progress: newProgress });
-    }, 2000);
+  // Save draft
+  const saveDraft = useCallback(async (data: ApplicationFormData) => {
+    try {
+      setIsSaving(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) return;
 
-    return () => clearTimeout(timeoutId);
-  }, [calculateProgress, saveDraftMutation]);
+      const newProgress = calculateProgress(data);
+      
+      const draftData = {
+        user_id: user.id,
+        form_data: data as any,
+        progress: newProgress as any,
+        last_saved_at: new Date().toISOString()
+      };
 
-  // Manual save function
-  const saveDraft = useCallback(() => {
-    const newProgress = calculateProgress(formData);
-    setProgress(newProgress);
-    saveDraftMutation.mutate({ formData, progress: newProgress });
-    
-    toast({
-      title: "Draft Saved",
-      description: "Your application progress has been saved.",
-    });
-  }, [formData, calculateProgress, saveDraftMutation, toast]);
-
-  // Delete draft function
-  const deleteDraft = useMutation({
-    mutationFn: async () => {
-      if (existingDraft) {
+      if (draftId) {
+        // Update existing draft
         const { error } = await supabase
           .from('application_drafts')
-          .delete()
-          .eq('id', existingDraft.id);
-        
-        if (error) throw error;
+          .update(draftData)
+          .eq('id', draftId);
+
+        if (error) {
+          console.error('Error updating draft:', error);
+          return;
+        }
+      } else {
+        // Create new draft
+        const { data: newDraft, error } = await supabase
+          .from('application_drafts')
+          .insert(draftData)
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Error creating draft:', error);
+          return;
+        }
+
+        setDraftId(newDraft.id);
       }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['applicationDraft'] });
-      setFormData({
-        studentName: "",
-        dateOfBirth: "",
-        grade: "",
-        gender: "",
-        parentName: "",
-        parentPhone: "",
-        parentEmail: "",
-        address: "",
-        previousSchool: "",
-        specialNeeds: "",
-        hasAllergies: false,
-        allergyDetails: "",
-        emergencyContact: "",
-        emergencyPhone: "",
-        additionalInfo: ""
-      });
+
+      setProgress(newProgress);
+      
+    } catch (error) {
+      console.error('Error saving draft:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [draftId, calculateProgress]);
+
+  // Update form data and trigger auto-save
+  const updateFormData = useCallback((field: string, value: string | boolean) => {
+    const newData = { ...formData, [field]: value };
+    setFormData(newData);
+    
+    // Auto-save after a short delay
+    const timeoutId = setTimeout(() => {
+      saveDraft(newData);
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
+  }, [formData, saveDraft]);
+
+  // Manual save
+  const saveNow = useCallback(async () => {
+    await saveDraft(formData);
+    toast({
+      title: "Draft Saved",
+      description: "Your progress has been saved successfully",
+    });
+  }, [formData, saveDraft, toast]);
+
+  // Delete draft
+  const deleteDraft = useCallback(async () => {
+    if (!draftId) return;
+
+    try {
+      const { error } = await supabase
+        .from('application_drafts')
+        .delete()
+        .eq('id', draftId);
+
+      if (error) {
+        console.error('Error deleting draft:', error);
+        return;
+      }
+
+      setDraftId(null);
+      setFormData(initialFormData);
       setProgress({
         studentInfo: false,
         parentInfo: false,
-        additionalInfo: false
+        additionalInfo: false,
+        completionPercentage: 0
       });
+    } catch (error) {
+      console.error('Error deleting draft:', error);
     }
-  });
+  }, [draftId]);
 
-  const getProgressPercentage = () => {
-    const completed = Object.values(progress).filter(Boolean).length;
-    return Math.round((completed / 3) * 100);
-  };
-
-  const getCompletedSteps = () => {
-    return Object.values(progress).filter(Boolean).length;
-  };
-
-  const getTotalSteps = () => {
-    return Object.keys(progress).length;
-  };
+  // Load draft on mount
+  useEffect(() => {
+    loadDraft();
+  }, [loadDraft]);
 
   return {
     formData,
-    setFormData,
     progress,
-    autoSave,
-    saveDraft,
-    deleteDraft: deleteDraft.mutate,
     isLoading,
-    isSaving: saveDraftMutation.isPending,
-    lastSaved: existingDraft?.last_saved_at,
-    getProgressPercentage,
-    getCompletedSteps,
-    getTotalSteps,
-    hasExistingDraft: !!existingDraft
+    isSaving,
+    updateFormData,
+    saveNow,
+    deleteDraft,
+    hasDraft: !!draftId
   };
 };

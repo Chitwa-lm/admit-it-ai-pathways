@@ -1,126 +1,106 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Circle, Clock } from 'lucide-react';
-import { FormProgress } from '@/hooks/useApplicationDraft';
+import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle2, Circle, AlertCircle } from "lucide-react";
+import { ApplicationProgress as ProgressType } from "@/hooks/useApplicationDraft";
 
 interface ApplicationProgressProps {
-  progress: FormProgress;
-  progressPercentage: number;
-  completedSteps: number;
-  totalSteps: number;
-  lastSaved?: string;
-  isSaving: boolean;
+  progress: ProgressType;
+  isSaving?: boolean;
 }
 
-const ApplicationProgress: React.FC<ApplicationProgressProps> = ({
-  progress,
-  progressPercentage,
-  completedSteps,
-  totalSteps,
-  lastSaved,
-  isSaving
-}) => {
-  const steps = [
+const ApplicationProgress = ({ progress, isSaving }: ApplicationProgressProps) => {
+  const sections = [
     {
-      name: 'Student Information',
+      title: "Student Information",
       completed: progress.studentInfo,
-      description: 'Name, date of birth, and grade level'
+      description: "Name, date of birth, grade level"
     },
     {
-      name: 'Parent Information',
+      title: "Parent Information", 
       completed: progress.parentInfo,
-      description: 'Contact details and address'
+      description: "Contact details and address"
     },
     {
-      name: 'Additional Information',
+      title: "Additional Information",
       completed: progress.additionalInfo,
-      description: 'Emergency contacts and special needs'
+      description: "Emergency contacts and special needs"
     }
   ];
 
-  const formatLastSaved = (timestamp?: string) => {
-    if (!timestamp) return 'Not saved';
-    
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-    
-    if (diffInMinutes < 1) return 'Just now';
-    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-    
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-    
-    return date.toLocaleDateString();
+  const getStatusIcon = (completed: boolean) => {
+    return completed ? (
+      <CheckCircle2 className="h-5 w-5 text-green-500" />
+    ) : (
+      <Circle className="h-5 w-5 text-muted-foreground" />
+    );
+  };
+
+  const getStatusBadge = (completed: boolean) => {
+    return completed ? (
+      <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">
+        Complete
+      </Badge>
+    ) : (
+      <Badge variant="secondary">
+        Pending
+      </Badge>
+    );
   };
 
   return (
     <Card className="mb-6">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Application Progress</CardTitle>
-          <Badge variant={progressPercentage === 100 ? "default" : "secondary"}>
-            {completedSteps}/{totalSteps} Steps
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Overall Progress */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className="font-medium">Overall Progress</span>
-            <span className="text-muted-foreground">{progressPercentage}%</span>
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-semibold">Application Progress</h3>
+            <p className="text-sm text-muted-foreground">
+              {progress.completionPercentage}% completed
+            </p>
           </div>
-          <Progress value={progressPercentage} className="h-2" />
+          <div className="flex items-center gap-2">
+            {isSaving && (
+              <>
+                <AlertCircle className="h-4 w-4 text-blue-500 animate-pulse" />
+                <span className="text-sm text-blue-600">Saving...</span>
+              </>
+            )}
+            <Badge 
+              variant={progress.completionPercentage === 100 ? "default" : "secondary"}
+              className={progress.completionPercentage === 100 ? "bg-green-100 text-green-800 border-green-200" : ""}
+            >
+              {progress.completionPercentage}%
+            </Badge>
+          </div>
         </div>
 
-        {/* Step-by-step Progress */}
+        <Progress value={progress.completionPercentage} className="mb-4" />
+
         <div className="space-y-3">
-          <h4 className="text-sm font-medium text-muted-foreground">Steps Completed:</h4>
-          {steps.map((step, index) => (
-            <div key={index} className="flex items-start space-x-3">
-              {step.completed ? (
-                <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-              ) : (
-                <Circle className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
-              )}
-              <div className="flex-1 min-w-0">
-                <p className={`text-sm font-medium ${
-                  step.completed ? 'text-foreground' : 'text-muted-foreground'
-                }`}>
-                  {step.name}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {step.description}
-                </p>
+          {sections.map((section, index) => (
+            <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+              <div className="flex items-center gap-3">
+                {getStatusIcon(section.completed)}
+                <div>
+                  <p className="font-medium text-sm">{section.title}</p>
+                  <p className="text-xs text-muted-foreground">{section.description}</p>
+                </div>
               </div>
-              {step.completed && (
-                <Badge variant="secondary" className="text-xs">
-                  Complete
-                </Badge>
-              )}
+              {getStatusBadge(section.completed)}
             </div>
           ))}
         </div>
 
-        {/* Save Status */}
-        <div className="pt-3 border-t border-border">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <div className="flex items-center space-x-2">
-              <Clock className="h-3 w-3" />
-              <span>
-                {isSaving ? 'Saving...' : `Last saved: ${formatLastSaved(lastSaved)}`}
-              </span>
+        {progress.completionPercentage > 0 && progress.completionPercentage < 100 && (
+          <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-blue-600" />
+              <p className="text-sm text-blue-800">
+                Your progress is automatically saved. You can continue where you left off anytime.
+              </p>
             </div>
-            {progressPercentage === 100 && (
-              <Badge variant="default" className="text-xs">
-                Ready to Submit
-              </Badge>
-            )}
           </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );
