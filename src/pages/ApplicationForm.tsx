@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,32 +10,46 @@ import { ArrowLeft, Save, Send, Brain } from "lucide-react";
 import SmartInput from "@/components/SmartInput";
 import { nlpService } from "@/services/nlpService";
 import { useToast } from "@/hooks/use-toast";
+import { useApplicationDraft } from "@/hooks/useApplicationDraft";
+import ApplicationProgress from "@/components/ApplicationProgress";
 
 const ApplicationForm = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [formData, setFormData] = useState({
-    studentName: "",
-    dateOfBirth: "",
-    grade: "",
-    gender: "",
-    parentName: "",
-    parentPhone: "",
-    parentEmail: "",
-    address: "",
-    previousSchool: "",
-    specialNeeds: "",
-    hasAllergies: false,
-    allergyDetails: "",
-    emergencyContact: "",
-    emergencyPhone: "",
-    additionalInfo: ""
-  });
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+  
+  const {
+    formData,
+    setFormData,
+    progress,
+    autoSave,
+    saveDraft,
+    deleteDraft,
+    isLoading,
+    isSaving,
+    lastSaved,
+    getProgressPercentage,
+    getCompletedSteps,
+    getTotalSteps,
+    hasExistingDraft
+  } = useApplicationDraft();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check if all required fields are completed
+    const progressPercentage = getProgressPercentage();
+    if (progressPercentage < 100) {
+      toast({
+        title: "Application Incomplete",
+        description: "Please complete all required sections before submitting.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     console.log("Application submitted:", formData);
+    deleteDraft(); // Clean up draft after successful submission
     toast({
       title: "Application Submitted",
       description: "Your application has been submitted successfully. You'll be redirected to upload documents.",
@@ -44,8 +58,22 @@ const ApplicationForm = () => {
   };
 
   const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    const newFormData = { ...formData, [field]: value };
+    setFormData(newFormData);
+    autoSave(newFormData);
   };
+
+  // Show loading state while fetching existing draft
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-muted-foreground">Loading your application...</p>
+        </div>
+      </div>
+    );
+  }
 
   const generateSummary = async () => {
     setIsGeneratingSummary(true);
@@ -78,7 +106,11 @@ const ApplicationForm = () => {
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Smart Application Form</h1>
-              <p className="text-gray-600">AI-powered form with smart suggestions and validation</p>
+              <p className="text-gray-600">
+                {hasExistingDraft 
+                  ? "Continue where you left off - your progress is automatically saved" 
+                  : "AI-powered form with smart suggestions and validation"}
+              </p>
             </div>
           </div>
           <Button
@@ -91,6 +123,16 @@ const ApplicationForm = () => {
             {isGeneratingSummary ? "Generating..." : "AI Summary"}
           </Button>
         </div>
+
+        {/* Progress Indicator */}
+        <ApplicationProgress
+          progress={progress}
+          progressPercentage={getProgressPercentage()}
+          completedSteps={getCompletedSteps()}
+          totalSteps={getTotalSteps()}
+          lastSaved={lastSaved}
+          isSaving={isSaving}
+        />
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Student Information */}
@@ -124,7 +166,7 @@ const ApplicationForm = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Grade Level *</Label>
-                  <Select onValueChange={(value) => handleInputChange("grade", value)}>
+                  <Select value={formData.grade} onValueChange={(value) => handleInputChange("grade", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select grade" />
                     </SelectTrigger>
@@ -298,11 +340,21 @@ const ApplicationForm = () => {
           </Card>
 
           <div className="flex space-x-4">
-            <Button type="button" variant="outline" className="flex-1">
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="flex-1"
+              onClick={saveDraft}
+              disabled={isSaving}
+            >
               <Save className="h-4 w-4 mr-2" />
-              Save Draft
+              {isSaving ? "Saving..." : "Save Draft"}
             </Button>
-            <Button type="submit" className="flex-1">
+            <Button 
+              type="submit" 
+              className="flex-1"
+              disabled={getProgressPercentage() < 100}
+            >
               <Send className="h-4 w-4 mr-2" />
               Submit Application
             </Button>
