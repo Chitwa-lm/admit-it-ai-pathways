@@ -14,6 +14,8 @@ import ParentPortal from "./pages/ParentPortal";
 import ApplicationForm from "./pages/ApplicationForm";
 import DocumentUpload from "./pages/DocumentUpload";
 import SchoolAdminDashboard from "./pages/SchoolAdminDashboard";
+import DatabaseTestPage from "./pages/DatabaseTestPage";
+import RouteGuard from "./components/RouteGuard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,7 +29,8 @@ const App = () => (
         <BrowserRouter>
           <div className="min-h-screen bg-background text-foreground transition-colors">
             <Navigation />
-            <Routes>
+            <RouteGuard>
+              <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/dashboard" element={<Index />} />
               <Route path="/parent-login" element={<ParentLogin />} />
@@ -36,9 +39,11 @@ const App = () => (
               <Route path="/application" element={<ApplicationForm />} />
               <Route path="/documents" element={<DocumentUpload />} />
               <Route path="/admin" element={<SchoolAdminDashboard />} />
+              <Route path="/test-database" element={<DatabaseTestPage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </RouteGuard>
           </div>
         </BrowserRouter>
       </TooltipProvider>

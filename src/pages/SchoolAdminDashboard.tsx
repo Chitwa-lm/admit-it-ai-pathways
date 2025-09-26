@@ -14,6 +14,10 @@ import AvailablePlacesTable from '@/components/admin/AvailablePlacesTable';
 import AddSchoolModal from '@/components/admin/AddSchoolModal';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminStats from '@/components/admin/AdminStats';
+import SchoolManagement from '@/components/admin/SchoolManagement';
+import AddSchoolForm from '@/components/admin/AddSchoolForm';
+import AvailablePlacesManager from '@/components/admin/AvailablePlacesManager';
+import PageHeader from '@/components/ui/PageHeader';
 import { createSampleData } from '@/utils/sampleData';
 
 const SchoolAdminDashboard = () => {
@@ -142,9 +146,10 @@ const SchoolAdminDashboard = () => {
         <AdminStats applications={applications || []} />
 
         <Tabs defaultValue="applications" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="applications">Applications</TabsTrigger>
             <TabsTrigger value="schools">Schools</TabsTrigger>
+            <TabsTrigger value="school-management">School Management</TabsTrigger>
             <TabsTrigger value="available-places">Available Places</TabsTrigger>
           </TabsList>
 
@@ -181,22 +186,16 @@ const SchoolAdminDashboard = () => {
                   <div>
                     <CardTitle className="flex items-center">
                       <School className="h-5 w-5 mr-2" />
-                      {isSuperAdmin ? 'All Schools' : 'Schools'}
+                      {isSuperAdmin ? 'All Schools Overview' : 'Schools Overview'}
                     </CardTitle>
                     {isSuperAdmin && (
                       <p className="text-sm text-gray-600">
-                        Manage all schools in the Zambian education system
+                        Quick overview of all schools in the Zambian education system
                       </p>
                     )}
                   </div>
                   {isSuperAdmin && (
-                    <Button 
-                      onClick={() => setShowAddSchoolModal(true)}
-                      className="bg-gradient-to-r from-blue-600 to-purple-600"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add School
-                    </Button>
+                    <AddSchoolForm onSchoolAdded={refetchSchools} />
                   )}
                 </div>
               </CardHeader>
@@ -213,21 +212,46 @@ const SchoolAdminDashboard = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="available-places">
+          <TabsContent value="school-management">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <Users className="h-5 w-5 mr-2" />
-                  Available Places
+                  <School className="h-5 w-5 mr-2" />
+                  School Management
                 </CardTitle>
                 <p className="text-sm text-gray-600">
-                  Manage enrollment capacity and deadlines for all grade levels
+                  Edit school details, manage available places, and update information
                 </p>
               </CardHeader>
               <CardContent>
-                <AvailablePlacesTable />
+                {schoolsLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading schools...</p>
+                  </div>
+                ) : (
+                  <SchoolManagement 
+                    schools={schools || []} 
+                    onSchoolUpdated={refetchSchools}
+                  />
+                )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="available-places">
+            <div>
+              {schoolsLoading ? (
+                <Card>
+                  <CardContent className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading available places...</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <AvailablePlacesManager schools={schools || []} />
+              )}
+            </div>
           </TabsContent>
         </Tabs>
       </main>

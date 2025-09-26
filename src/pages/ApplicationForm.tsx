@@ -1,19 +1,26 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Save, Send, Brain } from "lucide-react";
+import { Save, Send, Brain } from "lucide-react";
 import SmartInput from "@/components/SmartInput";
 import { nlpService } from "@/services/nlpService";
 import { useToast } from "@/hooks/use-toast";
+import PendingApplicationsProvider from "@/components/PendingApplicationsProvider";
+import PageHeader from "@/components/ui/PageHeader";
+import ParentNavigation from "@/components/parent/ParentNavigation";
+import { supabase } from "@/lib/supabase";
 
 const ApplicationForm = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const continueApplicationId = searchParams.get('continue');
+  
   const [formData, setFormData] = useState({
     studentName: "",
     dateOfBirth: "",
@@ -32,6 +39,67 @@ const ApplicationForm = () => {
     additionalInfo: ""
   });
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+  const [currentApplicationId, setCurrentApplicationId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Load existing application data if continuing
+  useEffect(() => {
+    const loadExistingApplication = async () => {
+      if (continueApplicationId) {
+        setIsLoading(true);
+        try {
+          const { data: application, error } = await supabase
+            .from('applications')
+            .select('*')
+            .eq('id', continueApplicationId)
+            .single();
+
+          if (error) throw error;
+
+          if (application && application.application_data) {
+            const appData = application.application_data;
+            
+            // Map the database structure to form structure
+            setFormData({
+              studentName: appData.personal_info?.first_name + ' ' + appData.personal_info?.last_name || '',
+              dateOfBirth: appData.personal_info?.date_of_birth || '',
+              grade: application.grade_level || '',
+              gender: appData.personal_info?.gender || '',
+              parentName: appData.personal_info?.parent_guardian_info?.father_name || appData.personal_info?.parent_guardian_info?.mother_name || '',
+              parentPhone: appData.personal_info?.parent_guardian_info?.father_phone || appData.personal_info?.parent_guardian_info?.mother_phone || '',
+              parentEmail: appData.personal_info?.parent_guardian_info?.father_email || appData.personal_info?.parent_guardian_info?.mother_email || '',
+              address: appData.personal_info?.address || '',
+              previousSchool: appData.academic_history?.[0]?.institution || '',
+              specialNeeds: '',
+              hasAllergies: appData.medical_info?.allergies?.length > 0 || false,
+              allergyDetails: appData.medical_info?.allergies?.join(', ') || '',
+              emergencyContact: appData.emergency_contact?.name || '',
+              emergencyPhone: appData.emergency_contact?.phone || '',
+              additionalInfo: ''
+            });
+
+            setCurrentApplicationId(continueApplicationId);
+            
+            toast({
+              title: "Application Loaded",
+              description: "Your previous application data has been loaded. You can continue where you left off.",
+            });
+          }
+        } catch (error) {
+          console.error('Error loading application:', error);
+          toast({
+            title: "Error",
+            description: "Failed to load your previous application. Starting with a blank form.",
+            variant: "destructive"
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadExistingApplication();
+  }, [continueApplicationId, toast]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,28 +136,29 @@ const ApplicationForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-3xl mx-auto">
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" onClick={() => navigate("/parent-portal")}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Portal
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Smart Application Form</h1>
-              <p className="text-gray-600">AI-powered form with smart suggestions and validation</p>
-            </div>
-          </div>
-          <Button
-            onClick={generateSummary}
-            disabled={isGeneratingSummary}
-            variant="outline"
-            size="sm"
-          >
-            <Brain className="h-4 w-4 mr-2" />
-            {isGeneratingSummary ? "Generating..." : "AI Summary"}
-          </Button>
+    <PendingApplicationsProvider checkOnMount={!continueApplicationId}>
+      <div className="min-h-screen bg-gray-50">
+        <ParentNavigation />
+        <div className="p-6">
+        <div className="max-w-3xl mx-auto">
+        <div className="mb-6">
+          <PageHeader
+            title="Smart Application Form"
+            description="AI-powered form with smart suggestions and validation"
+            backTo="/parent-portal"
+            backLabel="Back to Portal"
+            actions={
+              <Button
+                onClick={generateSummary}
+                disabled={isGeneratingSummary}
+                variant="outline"
+                size="sm"
+              >
+                <Brain className="h-4 w-4 mr-2" />
+                {isGeneratingSummary ? "Generating..." : "AI Summary"}
+              </Button>
+            }
+          />
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -308,8 +377,10 @@ const ApplicationForm = () => {
             </Button>
           </div>
         </form>
+        </div>
+        </div>
       </div>
-    </div>
+    </PendingApplicationsProvider>
   );
 };
 

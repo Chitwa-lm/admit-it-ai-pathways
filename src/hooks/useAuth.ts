@@ -67,16 +67,25 @@ export const useAuth = () => {
     // Check if this is the super admin email
     const isSuperAdmin = email === 'chitwamakupe15@gmail.com';
     
+    // Determine user role based on email or login context
+    let userRole = 'parent'; // Default to parent
+    if (isSuperAdmin) {
+      userRole = 'system_admin';
+    } else if (email.includes('admin') || email.includes('school')) {
+      userRole = 'school_admin';
+    }
+    
     // Mock authentication for development - create a properly typed mock user
     const mockUser = {
-      id: isSuperAdmin ? 'c7a6b1e4-2d8f-4c3a-9b5e-1f2a3c4d5e6f' : 'mock-user-id',
+      id: isSuperAdmin ? 'c7a6b1e4-2d8f-4c3a-9b5e-1f2a3c4d5e6f' : `mock-user-${Date.now()}`,
       email: email,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       app_metadata: {},
       user_metadata: {
-        first_name: isSuperAdmin ? 'Super' : 'Mock',
-        last_name: isSuperAdmin ? 'Admin' : 'User'
+        first_name: isSuperAdmin ? 'Super' : email.split('@')[0].split('.')[0] || 'User',
+        last_name: isSuperAdmin ? 'Admin' : email.split('@')[0].split('.')[1] || 'Parent',
+        role: userRole
       },
       aud: 'authenticated',
       role: 'authenticated',

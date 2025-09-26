@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeft, Upload, FileText, Check, X, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import DocumentValidator from "@/components/DocumentValidator";
+import ParentNavigation from "@/components/parent/ParentNavigation";
+import PageHeader from "@/components/ui/PageHeader";
 import type { DocumentVerification } from "@/services/nlpService";
 
 interface Document {
@@ -157,18 +159,16 @@ const DocumentUpload = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-6 flex items-center space-x-4">
-          <Button variant="ghost" onClick={() => navigate("/parent-portal")}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Portal
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Smart Document Upload</h1>
-            <p className="text-gray-600">AI-powered document verification and upload</p>
-          </div>
-        </div>
+    <div className="min-h-screen bg-gray-50">
+      <ParentNavigation />
+      <div className="p-6">
+        <div className="max-w-4xl mx-auto">
+          <PageHeader
+            title="Smart Document Upload"
+            description="AI-powered document verification and upload"
+            backTo="/parent-portal"
+            backLabel="Back to Portal"
+          />
 
         <Card className="mb-6">
           <CardContent className="pt-6">
@@ -344,6 +344,7 @@ const DocumentUpload = () => {
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   );
