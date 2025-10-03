@@ -14,6 +14,7 @@ import PendingApplicationsProvider from "@/components/PendingApplicationsProvide
 import PageHeader from "@/components/ui/PageHeader";
 import ParentNavigation from "@/components/parent/ParentNavigation";
 import { supabase } from "@/lib/supabase";
+import { ChatbotButton } from "../components/chatbot/ChatbotButton";
 
 const ApplicationForm = () => {
   const navigate = useNavigate();
@@ -380,6 +381,13 @@ const ApplicationForm = () => {
         </div>
         </div>
       </div>
+      
+      {/* Voice-Enabled Chatbot for Application Help */}
+      <ChatbotButton 
+        context="application" 
+        position="bottom-right"
+        showVoiceIndicator={true}
+      />
     </PendingApplicationsProvider>
   );
 };

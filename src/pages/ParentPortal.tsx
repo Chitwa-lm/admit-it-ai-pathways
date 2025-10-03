@@ -10,7 +10,8 @@ import { UserPlus, LogIn, FileText, Upload, CheckCircle, Search, Clock, AlertCir
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import AvailablePlaces from "@/components/AvailablePlaces";
-import ParentChatbot from "@/components/ParentChatbot";
+import { ChatbotButton } from "../components/chatbot/ChatbotButton";
+import { VoiceGuide } from "../components/VoiceGuide";
 import { usePendingApplications } from "@/hooks/usePendingApplications";
 import { APPLICATION_STATUSES } from "@/lib/constants";
 import { format } from "date-fns";
@@ -286,8 +287,15 @@ const ParentPortal = () => {
           )}
         </div>
 
-        {/* Floating Chatbot */}
-        <ParentChatbot />
+        {/* Voice-Enabled Chatbot */}
+        <ChatbotButton 
+          context="general" 
+          position="bottom-right"
+          showVoiceIndicator={true}
+        />
+        
+        {/* Voice Guide */}
+        <VoiceGuide />
       </div>
     );
   }

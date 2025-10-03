@@ -58,13 +58,13 @@ export const getRedirectRoute = (user: User | null, currentPath: string) => {
   
   // Only redirect if parent user specifically tries to access admin dashboard
   if (role === 'parent' && currentPath === '/admin') {
-    return '/parent-ortal';
+    return '/parent-portal';
   }
   
   // Don't redirect admin users automatically - let them navigate freely
   // This prevents issues with the login flow
   
-  rneeded
+  return null;
 };
 
 // Smart back navigation
