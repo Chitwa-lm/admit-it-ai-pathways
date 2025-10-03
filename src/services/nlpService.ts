@@ -24,11 +24,20 @@ export interface DocumentVerification {
     field: string;
     description: string;
     required: boolean;
+    suggestion?: string;
+    severity?: 'high' | 'medium' | 'low';
   }>;
   contentValidation: {
     isAppropriateContent: boolean;
-    contentIssues: string[];
+    contentIssues: Array<{
+      issue: string;
+      explanation: string;
+      solution: string;
+      severity: 'high' | 'medium' | 'low';
+    }> | string[];
     legitimacyScore: number;
+    documentTypeMatch?: boolean;
+    qualityIssues?: string[];
   };
   overallScore: number;
 }
@@ -281,10 +290,12 @@ class NLPService {
         confidence: validationResult.confidence / 100,
         grammarErrors: validationResult.grammarErrors || [],
         missingFields: validationResult.missingFields || [],
-        contentValidation: validationResult.contentValidation || {
-          isAppropriateContent: true,
-          contentIssues: [],
-          legitimacyScore: 70
+        contentValidation: {
+          ...validationResult.contentValidation,
+          contentIssues: validationResult.contentValidation?.contentIssues || [],
+          legitimacyScore: validationResult.contentValidation?.legitimacyScore || 70,
+          documentTypeMatch: validationResult.contentValidation?.documentTypeMatch !== false,
+          qualityIssues: validationResult.contentValidation?.qualityIssues || []
         },
         overallScore: validationResult.overallScore || 0
       };
@@ -304,9 +315,23 @@ class NLPService {
       // Add content validation issues
       if (!result.contentValidation.isAppropriateContent) {
         result.contentValidation.contentIssues.forEach(issue => {
-          result.issues.push(`Content Issue: ${issue}`);
+          if (typeof issue === 'string') {
+            result.issues.push(`Content Issue: ${issue}`);
+          } else {
+            result.issues.push(`${issue.issue}: ${issue.explanation} → ${issue.solution}`);
+          }
         });
       }
+
+      // Add document type mismatch issues
+      if (result.contentValidation.documentTypeMatch === false) {
+        result.issues.push(`Document Type Mismatch: This document may not be a valid ${documentType}`);
+      }
+
+      // Add quality issues
+      result.contentValidation.qualityIssues?.forEach(qualityIssue => {
+        result.issues.push(`Quality Issue: ${qualityIssue}`);
+      });
 
       // Add file-specific validations
       if (file.size > 5 * 1024 * 1024) {

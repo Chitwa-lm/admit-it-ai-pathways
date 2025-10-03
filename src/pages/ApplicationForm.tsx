@@ -8,6 +8,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Save, Send, Brain } from "lucide-react";
 import SmartInput from "@/components/SmartInput";
+import ApplicationProgress from "@/components/ApplicationProgress";
 import { nlpService } from "@/services/nlpService";
 import { useToast } from "@/hooks/use-toast";
 import PendingApplicationsProvider from "@/components/PendingApplicationsProvider";
@@ -23,6 +24,40 @@ const ApplicationForm = () => {
   const continueApplicationId = searchParams.get('continue');
   
   const [formData, setFormData] = useState({
+  // Add missing state and stub functions
+  const [progress, setProgress] = useState<{ completionPercentage: number }>({ completionPercentage: 0 });
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [hasDraft, setHasDraft] = useState<boolean>(false);
+
+  // Stub: update form data and recalculate progress
+  const updateFormData = (field: string, value: string | boolean) => {
+    setFormData((prev) => {
+      const updated = { ...prev, [field]: value };
+      // Example: recalculate completion percentage (customize as needed)
+      const requiredFields = [
+        'studentName', 'dateOfBirth', 'grade', 'gender', 'parentName', 'parentPhone', 'parentEmail', 'address', 'emergencyContact', 'emergencyPhone'
+      ];
+      const filled = requiredFields.filter((f) => updated[f as keyof typeof updated]);
+      setProgress({ completionPercentage: Math.round((filled.length / requiredFields.length) * 100) });
+      return updated;
+    });
+  };
+
+  // Stub: save draft
+  const saveNow = (): void => {
+    setIsSaving(true);
+    setTimeout(() => {
+      setIsSaving(false);
+      setHasDraft(true);
+      toast({ title: 'Draft Saved', description: 'Your draft has been saved.' });
+    }, 1000);
+  };
+
+  // Stub: delete draft
+  const deleteDraft = (): void => {
+    setHasDraft(false);
+    toast({ title: 'Draft Deleted', description: 'Your draft has been deleted.' });
+  };
     studentName: "",
     dateOfBirth: "",
     grade: "",
@@ -42,6 +77,41 @@ const ApplicationForm = () => {
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const [currentApplicationId, setCurrentApplicationId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Added missing state and stub functions
+  const [progress, setProgress] = useState<{ completionPercentage: number }>({ completionPercentage: 0 });
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [hasDraft, setHasDraft] = useState<boolean>(false);
+
+  // Stub: update form data and recalculate progress
+  const updateFormData = (field: string, value: string | boolean) => {
+    setFormData((prev) => {
+      const updated = { ...prev, [field]: value };
+      // Example: recalculate completion percentage (customize as needed)
+      const requiredFields = [
+        'studentName', 'dateOfBirth', 'grade', 'gender', 'parentName', 'parentPhone', 'parentEmail', 'address', 'emergencyContact', 'emergencyPhone'
+      ];
+      const filled = requiredFields.filter((f) => updated[f as keyof typeof updated]);
+      setProgress({ completionPercentage: Math.round((filled.length / requiredFields.length) * 100) });
+      return updated;
+    });
+  };
+
+  // Stub: save draft
+  const saveNow = () => {
+    setIsSaving(true);
+    setTimeout(() => {
+      setIsSaving(false);
+      setHasDraft(true);
+      toast({ title: 'Draft Saved', description: 'Your draft has been saved.' });
+    }, 1000);
+  };
+
+  // Stub: delete draft
+  const deleteDraft = () => {
+    setHasDraft(false);
+    toast({ title: 'Draft Deleted', description: 'Your draft has been deleted.' });
+  };
 
   // Load existing application data if continuing
   useEffect(() => {
@@ -104,16 +174,29 @@ const ApplicationForm = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (progress.completionPercentage < 100) {
+      toast({
+        title: "Application Incomplete",
+        description: "Please complete all required sections before submitting.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     console.log("Application submitted:", formData);
     toast({
       title: "Application Submitted",
       description: "Your application has been submitted successfully. You'll be redirected to upload documents.",
     });
+    
+    // Delete draft after successful submission
+    deleteDraft();
     navigate("/documents");
   };
 
   const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    updateFormData(field, value);
   };
 
   const generateSummary = async () => {
@@ -135,6 +218,17 @@ const ApplicationForm = () => {
       setIsGeneratingSummary(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading your application...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <PendingApplicationsProvider checkOnMount={!continueApplicationId}>
@@ -161,6 +255,8 @@ const ApplicationForm = () => {
             }
           />
         </div>
+
+        <ApplicationProgress progress={progress} isSaving={isSaving} />
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Student Information */}
@@ -194,7 +290,7 @@ const ApplicationForm = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Grade Level *</Label>
-                  <Select onValueChange={(value) => handleInputChange("grade", value)}>
+                  <Select value={formData.grade} onValueChange={(value) => handleInputChange("grade", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select grade" />
                     </SelectTrigger>
@@ -368,15 +464,33 @@ const ApplicationForm = () => {
           </Card>
 
           <div className="flex space-x-4">
-            <Button type="button" variant="outline" className="flex-1">
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="flex-1"
+              onClick={saveNow}
+              disabled={isSaving}
+            >
               <Save className="h-4 w-4 mr-2" />
-              Save Draft
+              {isSaving ? "Saving..." : "Save Draft"}
             </Button>
-            <Button type="submit" className="flex-1">
+            <Button 
+              type="submit" 
+              className="flex-1"
+              disabled={progress.completionPercentage < 100}
+            >
               <Send className="h-4 w-4 mr-2" />
               Submit Application
             </Button>
           </div>
+          
+          {hasDraft && progress.completionPercentage < 100 && (
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-2">
+                Complete all required sections to submit your application
+              </p>
+            </div>
+          )}
         </form>
         </div>
         </div>

@@ -7,13 +7,43 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.4"
   }
   public: {
     Tables: {
+      application_drafts: {
+        Row: {
+          created_at: string
+          form_data: Json
+          id: string
+          last_saved_at: string
+          progress: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          form_data?: Json
+          id?: string
+          last_saved_at?: string
+          progress?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          form_data?: Json
+          id?: string
+          last_saved_at?: string
+          progress?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       application_history: {
         Row: {
           application_id: string
@@ -430,7 +460,7 @@ export type Database = {
         Returns: string
       }
       is_school_admin: {
-        Args: { user_id: string; school_id: string }
+        Args: { school_id: string; user_id: string }
         Returns: boolean
       }
     }

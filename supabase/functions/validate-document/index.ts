@@ -25,12 +25,21 @@ interface ValidationResult {
     field: string;
     description: string;
     required: boolean;
+    suggestion?: string;
+    severity?: 'high' | 'medium' | 'low';
   }>;
   extractedData: Record<string, any>;
   contentValidation: {
     isAppropriateContent: boolean;
-    contentIssues: string[];
+    contentIssues: Array<{
+      issue: string;
+      explanation: string;
+      solution: string;
+      severity: 'high' | 'medium' | 'low';
+    }> | string[];
     legitimacyScore: number;
+    documentTypeMatch?: boolean;
+    qualityIssues?: string[];
   };
   confidence: number;
   overallScore: number;
@@ -108,7 +117,7 @@ serve(async (req) => {
             1. Extract relevant information from the document
             2. Verify that the document contains appropriate content for its type
             3. Check if the document is legitimate and contains expected information
-            4. Identify missing required fields
+            4. Identify missing required fields with detailed explanations and solutions
             
             For example:
             - Birth Certificate should contain: student's full name, date of birth, place of birth, parent names, official seals/signatures
@@ -136,14 +145,25 @@ serve(async (req) => {
               "missingFields": [
                 {
                   "field": "fieldName",
-                  "description": "Human readable description",
-                  "required": true
+                  "description": "What is missing (e.g., 'Student's full name is not clearly visible')",
+                  "required": true,
+                  "suggestion": "Specific action to fix (e.g., 'Ensure the student's name is clearly printed and fully visible')",
+                  "severity": "high|medium|low"
                 }
               ],
               "contentValidation": {
                 "isAppropriateContent": true,
-                "contentIssues": ["list of issues if document doesn't match expected type"],
-                "legitimacyScore": 85
+                "contentIssues": [
+                  {
+                    "issue": "Description of the issue",
+                    "explanation": "Why this is a problem",
+                    "solution": "How to fix it",
+                    "severity": "high|medium|low"
+                  }
+                ],
+                "legitimacyScore": 85,
+                "documentTypeMatch": true,
+                "qualityIssues": ["List of document quality problems like blur, poor scan, etc."]
               },
               "confidence": 85
             }`
@@ -156,11 +176,18 @@ serve(async (req) => {
 
 Required fields: ${requiredFields.join(', ')}
 
-Please verify:
-1. Does this document actually appear to be a ${documentType}?
+Please verify and provide detailed feedback:
+1. Does this document actually appear to be a ${documentType}? If not, explain why.
 2. Does it contain the type of information expected for this document type?
 3. Are there any red flags that suggest this might be the wrong document type?
-4. Extract all relevant fields and identify what's missing.`
+4. Extract all relevant fields and identify what's missing with specific suggestions.
+5. Check for document quality issues (blur, incomplete scan, poor resolution, etc.)
+6. Verify if the document appears authentic and legitimate.
+7. For each missing field, provide specific guidance on what should be visible and how to fix it.
+
+Be very specific about what's wrong and how to fix it. For example:
+- Instead of "Missing student name" say "Student's full name is not clearly visible in the expected location"
+- Instead of "Poor quality" say "Document appears blurry in the signature area, making verification difficult"`
           }
         ],
         temperature: 0.1,
@@ -193,13 +220,14 @@ Please verify:
 
     const result: ValidationResult = {
       grammarErrors: grammarResult.errors || [],
-      missingFields: extractionResult.missingFields || [],
-      extractedData: extractionResult.extractedData || {},
-      contentValidation: extractionResult.contentValidation || {
-        isAppropriateContent: true,
-        contentIssues: [],
-        legitimacyScore: 70
-      },
+        missingFields: extractionResult.missingFields || [],
+        contentValidation: {
+          ...extractionResult.contentValidation,
+          contentIssues: extractionResult.contentValidation?.contentIssues || [],
+          legitimacyScore: extractionResult.contentValidation?.legitimacyScore || 70,
+          documentTypeMatch: extractionResult.contentValidation?.documentTypeMatch !== false,
+          qualityIssues: extractionResult.contentValidation?.qualityIssues || []
+        },
       confidence: extractionResult.confidence || 70,
       overallScore
     };
